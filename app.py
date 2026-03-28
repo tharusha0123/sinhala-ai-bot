@@ -4,7 +4,7 @@ import json
 
 # --- 1. CONFIGURATION ---
 # ඔයා අලුතින් ගත්ත Gemini API Key එක මෙතනට දාන්න
-API_KEY = "AIzaSyA4wToIbriEUHVsRdGStlMmQZJyJRSezzg"
+API_KEY = "AIzaSyDSllOH_riZzyidocOnmpSPOvHVv3kO_oQ"
 
 def get_gemini_response(user_input):
     # Gemini 1.5 Flash API URL
