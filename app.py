@@ -8,8 +8,8 @@ API_KEY = "AIzaSyDSllOH_riZzyidocOnmpSPOvHVv3kO_oQ"
 
 def get_gemini_response(user_input):
     # Gemini 1.5 Flash API URL
-# v1beta වෙනුවට v1 දාලා බලන්න
-url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"    
+    # v1beta වෙනුවට v1 දාලා බලන්න
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"    
     headers = {'Content-Type': 'application/json'}
     
     # AI එකට දෙන විශේෂ උපදෙස් (System Instruction)
