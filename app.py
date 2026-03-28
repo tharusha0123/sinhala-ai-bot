@@ -12,18 +12,22 @@ def get_ai_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # සිංහල භාෂාව ඉතාම නිවැරදිව පාවිච්චි කරන්න කියලා AI එකට තදින්ම උපදෙස් දෙනවා
+    # සිංග්ලිෂ් (Singlish) තේරුම් ගැනීමට විශේෂ උපදෙස් මෙතන තියෙනවා
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
             {
                 "role": "system", 
-                "content": "You are a highly intelligent and accurate Sinhala AI assistant. Your task is to understand the user's question in Sinhala and provide a factual, accurate answer in natural-sounding Sinhala. Focus strictly on answering the user's specific question correctly."
+                "content": """You are an advanced Sinhala AI. 
+                1. The user might type in 'Singlish' (Sinhala words using English letters, e.g., 'kohomada', 'usa gaha mokakda'). 
+                2. Your first task is to understand the meaning of the Singlish text.
+                3. Then, provide a highly accurate, factual answer in proper Sinhala Unicode (සිංහල අකුරින්).
+                4. Be direct and precise. If the user asks for the tallest tree, answer 'Hyperion' or 'Redwood' in Sinhala."""
             },
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.1,  # මේක 0.1 ට අඩු කිරීමෙන් AI එක බොරු කීම (Hallucination) සම්පූර්ණයෙන්ම වගේ නවතිනවා
-        "max_tokens": 1000
+        "temperature": 0.0,
+        "top_p": 1
     }
     
     try:
@@ -31,21 +35,15 @@ def get_ai_response(user_input):
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
         else:
-            return f"දෝෂයකි: {response.status_code}"
+            return f"Error: {response.status_code}"
     except Exception as e:
-        return f"සම්බන්ධතාවයේ ගැටලුවකි: {e}"
+        return f"Connection Error: {e}"
 
 # --- 2. UI SETUP ---
 st.set_page_config(page_title="Sinhala AI by Tharusha", page_icon="🤖")
 
-st.markdown("""
-    <style>
-    .main { background-color: #0e1117; }
-    </style>
-    """, unsafe_allow_html=True)
-
 st.title("සිංහල AI සහායකයා 🤖")
-st.caption("Created by Tharusha Rathnayake")
+st.caption("Singlish සහ සිංහල අකුරු යන දෙකම තේරුම් ගත හැක.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -54,13 +52,13 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("මොනවද දැනගන්න ඕනේ?"):
+if prompt := st.chat_input("Singlish වලින් හෝ සිංහලෙන් අසන්න..."):
     with st.chat_message("user"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant"):
-        with st.spinner("පිළිතුර සකසමින්..."):
+        with st.spinner("පණිවිඩය තේරුම් ගනිමින්..."):
             answer = get_ai_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
