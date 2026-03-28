@@ -1,18 +1,33 @@
 import streamlit as st
-import google.generativeai as genai
+import requests
+import json
 
-# --- CONFIGURATION ---
-# ඔයාගේ API Key එක මෙතනට දාන්න
+# --- 1. CONFIGURATION ---
+# ඔයාගේ API Key එක මෙතනට හරියටම දාන්න
 API_KEY = "AIzaSyCyLmIbX0NJK1auohCc0VCEy5EhAYk3j_Y"
 
-genai.configure(api_key=API_KEY)
-# මේක අලුතින් එකතු කරන්න
-import os
-os.environ["GOOGLE_API_KEY"] = API_KEY
-# පරණ එක වෙනුවට මේක දාන්න (models/ කියන කෑල්ල වැදගත්)
-model = genai.GenerativeModel('models/gemini-pro')
+def get_gemini_response(user_input):
+    # මේ URL එක 100% ක් ස්ථාවරයි
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+    
+    headers = {'Content-Type': 'application/json'}
+    
+    data = {
+        "contents": [{
+            "parts": [{"text": f"Respond in Sinhala language clearly: {user_input}"}]
+        }]
+    }
+    
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    
+    if response.status_code == 200:
+        result = response.json()
+        return result['candidates'][0]['content']['parts'][0]['text']
+    else:
+        # Error එකක් ආවොත් ඒක පෙන්වනවා
+        return f"පද්ධතියේ දෝෂයක්: {response.status_code}. කරුණාකර API Key එක පරීක්ෂා කරන්න."
 
-# --- UI ---
+# --- 2. UI SETUP ---
 st.set_page_config(page_title="Sinhala AI", page_icon="🤖")
 st.title("සිංහල AI සහායකයා 🤖")
 
@@ -21,17 +36,15 @@ if "messages" not in st.session_state:
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.write(message["content"])
+        st.markdown(message["content"])
 
 if prompt := st.chat_input("මොනවද දැනගන්න ඕනේ?"):
     with st.chat_message("user"):
-        st.write(prompt)
+        st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    try:
-        response = model.generate_content(f"Respond in Sinhala: {prompt}")
-        with st.chat_message("assistant"):
-            st.write(response.text)
-        st.session_state.messages.append({"role": "assistant", "content": response.text})
-    except Exception as e:
-        st.error(f"Error: {e}")
+
+    with st.chat_message("assistant"):
+        with st.spinner("පිළිතුර සකසමින්..."):
+            answer = get_gemini_response(prompt)
+            st.markdown(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
