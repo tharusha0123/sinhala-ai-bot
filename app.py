@@ -18,11 +18,12 @@ def get_ai_response(user_input):
         "messages": [
             {
                 "role": "system", 
-                "content": "ඔබ තාරුෂ රත්නායක (Tharusha Rathnayake) විසින් නිර්මාණය කරන ලද සිංහල AI සහායකයෙකි. ඔබ සැමවිටම ඉතා පැහැදිලි, නිවැරදි සහ ව්‍යාකරණානුකූල සිංහල භාෂාවෙන් පමණක් පිළිතුරු දිය යුතුය. පරිශීලකයා 'ඔබ කවුද' කියා ඇසුවහොත් ඔබ තාරුෂගේ AI සහායකයා බව පවසන්න."
+                "content": "You are a highly intelligent and accurate Sinhala AI assistant. Your task is to understand the user's question in Sinhala and provide a factual, accurate answer in natural-sounding Sinhala. Focus strictly on answering the user's specific question correctly."
             },
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.5  # මේකෙන් පිළිතුරේ නිරවද්‍යතාවය (Accuracy) වැඩි කරනවා
+        "temperature": 0.1,  # මේක 0.1 ට අඩු කිරීමෙන් AI එක බොරු කීම (Hallucination) සම්පූර්ණයෙන්ම වගේ නවතිනවා
+        "max_tokens": 1000
     }
     
     try:
