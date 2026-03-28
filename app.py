@@ -1,36 +1,47 @@
 import streamlit as st
 import requests
+import json
 
-# --- CONFIGURATION ---
-# ඔයා අලුතින් ගත්ත Groq API Key එක මෙතනට දාන්න
-GROQ_API_KEY = "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"
+# --- 1. CONFIGURATION ---
+# ඔයා අලුතින් ගත්ත Gemini API Key එක මෙතනට දාන්න
+API_KEY = "AIzaSyAjImzsTrQ1EelfUJx0bqV4MJcRIZrVknc"
 
-def get_groq_response(user_input):
-    url = "https://api.groq.com/openai/v1/chat/completions"
+def get_gemini_response(user_input):
+    # Gemini 1.5 Flash API URL
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
     
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json"
-    }
+    headers = {'Content-Type': 'application/json'}
+    
+    # AI එකට දෙන විශේෂ උපදෙස් (System Instruction)
+    system_prompt = "ඔබ තාරුෂ (Tharusha) විසින් නිර්මාණය කරන ලද සිංහල AI සහායකයෙකි. ඔබ සැමවිටම ඉතා නිවැරදි ව්‍යාකරණ සහිතව සිංහල භාෂාවෙන් පමණක් පිළිතුරු දිය යුතුය. ඉතා සුහදශීලී වන්න."
     
     data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant. Always respond in Sinhala language clearly."},
-            {"role": "user", "content": user_input}
-        ]
+        "contents": [{
+            "parts": [{"text": f"{system_prompt}\n\nUser: {user_input}"}]
+        }]
     }
     
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, headers=headers, data=json.dumps(data))
     
     if response.status_code == 200:
-        return response.json()['choices'][0]['message']['content']
+        result = response.json()
+        return result['candidates'][0]['content']['parts'][0]['text']
     else:
-        return f"Error: {response.status_code} - {response.text}"
+        return "කණගාටුයි, සම්බන්ධතාවයේ දෝෂයක් පවතී. කරුණාකර API Key එක පරීක්ෂා කරන්න."
 
-# --- UI SETUP ---
-st.set_page_config(page_title="Sinhala AI Assistant", page_icon="🤖")
-st.title("සිංහල AI සහායකයා (Groq) 🤖")
+# --- 2. UI SETUP ---
+st.set_page_config(page_title="Sinhala AI by Tharusha", page_icon="🤖")
+
+# වෙබ් අඩවියේ පෙනුම ලස්සන කිරීම
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .stTextInput > div > div > input { color: #ffffff; }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.title("සිංහල AI සහායකයා 🤖")
+st.caption("Created by Tharusha Rathnayake")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -45,7 +56,7 @@ if prompt := st.chat_input("මොනවද දැනගන්න ඕනේ?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant"):
-        with st.spinner("සිතමින් පවතී..."):
-            answer = get_groq_response(prompt)
+        with st.spinner("පිළිතුර සකසමින්..."):
+            answer = get_gemini_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
