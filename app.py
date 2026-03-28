@@ -1,42 +1,45 @@
 import streamlit as st
 import requests
-import json
 
 # --- 1. CONFIGURATION ---
-# ඔයා අලුතින් ගත්ත Gemini API Key එක මෙතනට දාන්න
-API_KEY = "AIzaSyDSllOH_riZzyidocOnmpSPOvHVv3kO_oQ"
+# ඔයාගේ GROQ API Key එක මෙතනට දාන්න
+API_KEY = "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"
 
-def get_gemini_response(user_input):
-    # Gemini 1.5 Flash API URL
-    # v1beta වෙනුවට v1 දාලා බලන්න
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"    
-    headers = {'Content-Type': 'application/json'}
-    
-    # AI එකට දෙන විශේෂ උපදෙස් (System Instruction)
-    system_prompt = "ඔබ තාරුෂ (Tharusha) විසින් නිර්මාණය කරන ලද සිංහල AI සහායකයෙකි. ඔබ සැමවිටම ඉතා නිවැරදි ව්‍යාකරණ සහිතව සිංහල භාෂාවෙන් පමණක් පිළිතුරු දිය යුතුය. ඉතා සුහදශීලී වන්න."
-    
-    data = {
-        "contents": [{
-            "parts": [{"text": f"{system_prompt}\n\nUser: {user_input}"}]
-        }]
+def get_ai_response(user_input):
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
     }
     
-    response = requests.post(url, headers=headers, data=json.dumps(data))
+    # සිංහල භාෂාව ඉතාම නිවැරදිව පාවිච්චි කරන්න කියලා AI එකට තදින්ම උපදෙස් දෙනවා
+    data = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {
+                "role": "system", 
+                "content": "ඔබ තාරුෂ රත්නායක (Tharusha Rathnayake) විසින් නිර්මාණය කරන ලද සිංහල AI සහායකයෙකි. ඔබ සැමවිටම ඉතා පැහැදිලි, නිවැරදි සහ ව්‍යාකරණානුකූල සිංහල භාෂාවෙන් පමණක් පිළිතුරු දිය යුතුය. පරිශීලකයා 'ඔබ කවුද' කියා ඇසුවහොත් ඔබ තාරුෂගේ AI සහායකයා බව පවසන්න."
+            },
+            {"role": "user", "content": user_input}
+        ],
+        "temperature": 0.5  # මේකෙන් පිළිතුරේ නිරවද්‍යතාවය (Accuracy) වැඩි කරනවා
+    }
     
-    if response.status_code == 200:
-        result = response.json()
-        return result['candidates'][0]['content']['parts'][0]['text']
-    else:
-        return "කණගාටුයි, සම්බන්ධතාවයේ දෝෂයක් පවතී. කරුණාකර API Key එක පරීක්ෂා කරන්න."
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content']
+        else:
+            return f"දෝෂයකි: {response.status_code}"
+    except Exception as e:
+        return f"සම්බන්ධතාවයේ ගැටලුවකි: {e}"
 
 # --- 2. UI SETUP ---
 st.set_page_config(page_title="Sinhala AI by Tharusha", page_icon="🤖")
 
-# වෙබ් අඩවියේ පෙනුම ලස්සන කිරීම
 st.markdown("""
     <style>
     .main { background-color: #0e1117; }
-    .stTextInput > div > div > input { color: #ffffff; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -57,6 +60,6 @@ if prompt := st.chat_input("මොනවද දැනගන්න ඕනේ?"):
 
     with st.chat_message("assistant"):
         with st.spinner("පිළිතුර සකසමින්..."):
-            answer = get_gemini_response(prompt)
+            answer = get_ai_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
