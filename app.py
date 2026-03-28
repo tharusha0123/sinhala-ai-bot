@@ -6,7 +6,11 @@ import google.generativeai as genai
 API_KEY = "AIzaSyCK1KkU10SWy1yKBVxlwd-SLE4xkbcvmUU"
 
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# මේක අලුතින් එකතු කරන්න
+import os
+os.environ["GOOGLE_API_KEY"] = API_KEY
+# පරණ එක වෙනුවට මේක දාන්න (models/ කියන කෑල්ල වැදගත්)
+model = genai.GenerativeModel('models/gemini-pro')
 
 # --- UI ---
 st.set_page_config(page_title="Sinhala AI", page_icon="🤖")
