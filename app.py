@@ -6,34 +6,34 @@ MISTRAL_API_KEY = "I8LgRmMLn3brmAO2qLPQquZtsDRdBLaw"
 
 def get_mistral_response(user_input):
     url = "https://api.mistral.ai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
+    headers = {
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
+        "Content-Type": "application/json"
+    }
     
-    # සිංග්ලිෂ් වචන වල තේරුම සහ දත්ත නිවැරදිව හඳුනා ගැනීමට දෙන නවතම උපදෙස්
+    # 🔴 රහස: මෙතනදී අපි AI එකට කියනවා මුලින්ම ප්‍රශ්නය ඉංග්‍රීසියට හරවලා හිතන්න කියලා.
+    # එතකොට 'podima' කියන්නේ 'smallest' කියලා ඒක හරියටම අඳුනගන්නවා.
     system_instruction = (
-        "You are a professional factual AI assistant. Rules:\n"
-        "1. Understand Singlish intent: 'usa'=height, 'diga'=length, 'palala'=width, 'lokuma rata'=largest country, 'duupath'=islands.\n"
-        "2. First, identify the core question. (e.g., if asked about 'lokuma rata', it's Russia).\n"
-        "3. Provide the answer in natural, grammatically correct Sinhala Unicode.\n"
-        "4. Keep the answer direct and short (1-2 sentences).\n"
-        "5. Example: 'lokaye lokuma rata mokakd' -> 'ලෝකයේ විශාලතම රට රුසියාවයි.'\n"
-        "6. If asked about Sri Lanka's measurements: Height=2524m, Width=240km, Length=435km."
+        "You are a highly accurate Sinhala AI. To ensure 100% accuracy, follow these steps:\n"
+        "1. Translate the user's Singlish/Sinhala input into English mentally.\n"
+        "2. Find the correct world fact for that English question.\n"
+        "3. Translate that fact into perfect, natural Sinhala Unicode.\n"
+        "4. Context rules: 'usa'=height, 'diga'=length, 'palala'=width, 'rata'=country, 'podima'=smallest, 'lokuma'=largest.\n"
+        "5. Direct answer only. 1 sentence max."
     )
     
     data = {
         "model": "mistral-large-latest",
         "messages": [
             {"role": "system", "content": system_instruction},
-            {"role": "user", "content": user_input}
+            {"role": "user", "content": f"Think in English, answer in Sinhala: {user_input}"}
         ],
-        "temperature": 0.1 # නිවැරදි බව සහ නම්‍යශීලී බව අතර සමබරතාවයක් සඳහා
+        "temperature": 0.0 # වැරදීමේ සම්භාවිතාව බිංදුවටම අඩු කිරීමට
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content']
-        else:
-            return "API සම්බන්ධතාවයේ දෝෂයකි."
+        return response.json()['choices'][0]['message']['content']
     except:
         return "දත්ත ලබා ගැනීමට නොහැකි විය."
 
@@ -42,9 +42,9 @@ st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖")
 
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg, #0f0c29, #302b63); color: white; }
+    .stApp { background: #0e1117; color: white; }
     .main-title { font-size: 2.5rem; color: #00d4ff; text-align: center; font-weight: bold; }
-    .stChatMessage { background: rgba(255, 255, 255, 0.05) !important; border-radius: 15px !important; }
+    .stChatMessage { border-radius: 15px !important; }
     </style>
     """, unsafe_allow_html=True)
 
