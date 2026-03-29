@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-# ඔයාගේ Mistral API Key එක (console.mistral.ai එකෙන් ගත්තු එක) මෙතනට දාන්න
 MISTRAL_API_KEY = "q88gQmmMVBs5txpq0qT8BskYAZ2mnpvl"
 
 def get_mistral_response(user_input):
@@ -12,20 +11,14 @@ def get_mistral_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # ඉතාමත් ශක්තිමත් සිංග්ලිෂ් සහ සිංහල උපදෙස් මාලාව
+    # Direct Answer Logic (Clean & Factually Correct)
     system_instruction = (
-        "You are a factual Sinhala AI expert. Your goal is to provide DIRECT and NATURAL Sinhala answers.\n\n"
-        "STRICT SINGLISH RULES:\n"
-        "- 'usa' / 'ussa' = Height/Altitude (උස). If about Sri Lanka, answer 'Pidurutalagala is 2524m'.\n"
-        "- 'palala' = Width (පළල). If about Sri Lanka, answer '240km'.\n"
-        "- 'diga' = Length (දිග). If about Sri Lanka, answer '435km'.\n"
-        "- 'wishalathwaya' = Area (වර්ග ප්‍රමාණය). If about Sri Lanka, answer '65,610 sq km'.\n"
-        "- 'gaga' / 'gangawa' = River (ගංගාව).\n\n"
-        "OUTPUT FORMAT:\n"
-        "1. Do NOT show any thinking process or analysis like 'ප්‍රමාණ විශ්ලේෂණය'.\n"
-        "2. Directly provide the answer in 1 or 2 natural Sinhala sentences.\n"
-        "3. Use professional and natural Sinhala (e.g., use 'ගංගාවයි' or 'වේ' instead of 'ගඟ ය').\n"
-        "4. Be 100% factually correct with numbers and units."
+        "You are a factual Sinhala AI. Your goal is to provide DIRECT, SIMPLE, and NATURAL Sinhala answers.\n"
+        "RULES:\n"
+        "1. Do NOT show any analysis or thinking process.\n"
+        "2. Directly answer in 1-2 sentences.\n"
+        "3. Interpret Singlish: 'usa'=height, 'diga'=length, 'palala'=width, 'wishalathwaya'=area, 'gaga'=river.\n"
+        "4. Use natural grammar like 'ලෝකයේ දිගම ගංගාව නයිල් ගංගාවයි' (ending with 'යි')."
     )
     
     data = {
@@ -34,62 +27,62 @@ def get_mistral_response(user_input):
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0 # වැරදි තොරතුරු දීම වැළැක්වීමට
+        "temperature": 0.0
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content']
-        else:
-            return "කණගාටුයි, දත්ත ලබා ගැනීමේ දෝෂයක්. කරුණාකර API Key එක පරීක්ෂා කරන්න."
-    except Exception as e:
-        return f"සම්බන්ධතාවයේ දෝෂයකි: {e}"
+        return response.json()['choices'][0]['message']['content']
+    except:
+        return "දත්ත ලබා ගැනීමේ දෝෂයකි. නැවත උත්සාහ කරන්න."
 
-# --- 2. UI SETTINGS (LASSANA KIRIMA) ---
-st.set_page_config(page_title="Sinhala AI Assistant", page_icon="🤖", layout="centered")
+# --- 2. UI DESIGN (ADVANCED CSS) ---
+st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖", layout="centered")
 
-# Custom CSS for Professional UI
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; }
-    .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
-    h1 { color: #00d4ff; text-align: center; font-weight: 800; }
-    .status-tag { color: #888; text-align: center; font-size: 0.9rem; }
+    /* Gradient Background */
+    .stApp {
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        color: white;
+    }
+    
+    /* Glassmorphism Chat Bubbles */
+    .stChatMessage {
+        background: rgba(255, 255, 255, 0.05) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px !important;
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Title Styling */
+    .main-title {
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        text-align: center;
+        background: linear-gradient(to right, #00d4ff, #00ff88);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0px;
+    }
+    
+    .sub-title {
+        text-align: center;
+        color: #aaa;
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    /* Input Box Styling */
+    .stChatInputContainer {
+        padding-bottom: 20px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# Sidebar with Presentation Info
+# --- 3. SIDEBAR ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=80)
-    st.title("AI Control Panel")
-    st.write("---")
-    st.info("සිංහල සහ සිංග්ලිෂ් යන භාෂා දෙකම නිවැරදිව හඳුනාගැනීමට මෙම පද්ධතිය සමත් වේ.")
-    st.write("**ප්‍රවර්ධක:** Tharusha Rathnayake")
-    st.success("තත්ත්වය: සක්‍රීයයි ✅")
-
-# Main Header
-st.markdown("<h1>සිංහල AI සහායකයා 🤖</h1>", unsafe_allow_html=True)
-st.markdown("<p class='status-tag'>Mistral Large 2 | High-Precision Mode</p>", unsafe_allow_html=True)
-st.write("---")
-
-# Chat History Session
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Display Messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Input Logic
-if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
-    with st.chat_message("user", avatar="🧑‍💻"):
-        st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("තොරතුරු සොයමින් පවතී..."):
-            answer = get_mistral_response(prompt)
-            st.markdown(answer)
-            st.session_state.messages.append({"role": "assistant", "content": answer})
+    st.markdown("<h2 style='color:#00d4
