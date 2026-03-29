@@ -16,12 +16,13 @@ def get_mistral_response(user_input):
     
     # මෙතන තමයි මැජික් එක තියෙන්නේ - Few-Shot Prompting
     system_message = (
-        "You are a factual Sinhala AI. Your goal is 100% accuracy. "
-        "Strictly follow these examples for logic:\n"
-        "Example 1: User asks 'USA wishalathwaya' -> Understand as 'Area'. Answer: 'ඇමරිකා එක්සත් ජනපදයේ වර්ග ප්‍රමාණය වර්ග කිලෝමීටර් මිලියන 9.8 කි.'\n"
-        "Example 2: User asks 'Usa gaha' -> Understand as 'Tallest tree'. Answer: 'ලෝකයේ උසම ගස වන්නේ හයිපීරියන් (Hyperion) නැමැති රෙඩ්වුඩ් ගසයි.'\n"
-        "Rule: Always translate Singlish to English internally to find the fact, then translate back to perfect Sinhala. "
-        "Do not confuse 'Size/Area' with 'Largest city' or 'Population'."
+        "You are a highly logical Sinhala AI. Your task is to correctly interpret Singlish words based on context.\n"
+        "Strict Translation Rules:\n"
+        "1. If the user says 'usa', it means 'Height' (උස), NOT the country USA. Example: 'lankawe usa' means 'Highest point of Sri Lanka'.\n"
+        "2. If the user says 'wishalathwaya', it means 'Area/Size' (වර්ග ප්‍රමාණය), NOT the largest city.\n"
+        "3. If the user says 'bara', it means 'Weight' (බර).\n"
+        "4. If the user says 'durapramanaya', it means 'Distance' (දුර).\n\n"
+        "Always respond in natural, factual Sinhala Unicode. If asked about 'lankawe usa', mention Pidurutalagala height."
     )
     
     data = {
