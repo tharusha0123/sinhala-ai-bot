@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-MISTRAL_API_KEY = "q88gQmmMVBs5txpq0qT8BskYAZ2mnpvl"
+MISTRAL_API_KEY = "I8LgRmMLn3brmAO2qLPQquZtsDRdBLaw"
 
 def get_mistral_response(user_input):
     url = "https://api.mistral.ai/v1/chat/completions"
