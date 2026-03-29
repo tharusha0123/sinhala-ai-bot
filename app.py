@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
+# ඔයාගේ Mistral API Key එක (console.mistral.ai එකෙන් ගත්තු එක) මෙතනට දාන්න
 MISTRAL_API_KEY = "q88gQmmMVBs5txpq0qT8BskYAZ2mnpvl"
 
 def get_mistral_response(user_input):
@@ -11,58 +12,68 @@ def get_mistral_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # සිංග්ලිෂ් සහ සිංහල අතර ඇති සියලුම සමානකම් AI එකට හඳුන්වා දීම
+    # ඉතාමත් ශක්තිමත් සිංග්ලිෂ් සහ සිංහල උපදෙස් මාලාව
     system_instruction = (
-        "You are a specialized linguistic engine for Sinhala and Singlish. "
-        "Your goal is to interpret Singlish terms accurately before answering.\n\n"
-        
-        "DICTIONARY RULES (Singlish to Sinhala Meaning):\n"
-        "1. 'usa' / 'ussa' / 'height' = උස (Height/Altitude). "
-        "   - If 'lankawe usa', refer to Pidurutalagala (2524m).\n"
-        "2. 'palala' / 'width' = පළල (Width). "
-        "   - If 'lankawe palala', refer to max width (240km).\n"
-        "3. 'diga' / 'length' = දිග (Length). "
-        "   - If 'lankawe diga', refer to max length (435km).\n"
-        "4. 'wishalathwaya' / 'size' / 'area' = වර්ග ප්‍රමාණය (Area). "
-        "   - If 'lankawe wishalathwaya', refer to 65,610 sq km.\n"
-        "5. 'bara' / 'weight' = බර (Weight).\n"
-        "6. 'USA' (All Caps) = United States of America.\n\n"
-        
-        "LOGIC STEPS:\n"
-        "- Step 1: Check if the word is 'usa' (height) or 'USA' (country).\n"
-        "- Step 2: Extract the correct factual data in English.\n"
-        "- Step 3: Provide a professional answer in Sinhala Unicode.\n"
-        "- Step 4: Be precise with numbers and units (m, km, sq km)."
+        "You are a factual Sinhala AI expert. Your goal is to provide DIRECT and NATURAL Sinhala answers.\n\n"
+        "STRICT SINGLISH RULES:\n"
+        "- 'usa' / 'ussa' = Height/Altitude (උස). If about Sri Lanka, answer 'Pidurutalagala is 2524m'.\n"
+        "- 'palala' = Width (පළල). If about Sri Lanka, answer '240km'.\n"
+        "- 'diga' = Length (දිග). If about Sri Lanka, answer '435km'.\n"
+        "- 'wishalathwaya' = Area (වර්ග ප්‍රමාණය). If about Sri Lanka, answer '65,610 sq km'.\n"
+        "- 'gaga' / 'gangawa' = River (ගංගාව).\n\n"
+        "OUTPUT FORMAT:\n"
+        "1. Do NOT show any thinking process or analysis like 'ප්‍රමාණ විශ්ලේෂණය'.\n"
+        "2. Directly provide the answer in 1 or 2 natural Sinhala sentences.\n"
+        "3. Use professional and natural Sinhala (e.g., use 'ගංගාවයි' or 'වේ' instead of 'ගඟ ය').\n"
+        "4. Be 100% factually correct with numbers and units."
     )
     
     data = {
         "model": "mistral-large-latest",
         "messages": [
             {"role": "system", "content": system_instruction},
-            {"role": "user", "content": f"Think carefully about the intent and answer: {user_input}"}
+            {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0 # වැරදි අර්ථකථන සම්පූර්ණයෙන්ම නැවැත්වීමට
+        "temperature": 0.0 # වැරදි තොරතුරු දීම වැළැක්වීමට
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
-        return response.json()['choices'][0]['message']['content']
-    except:
-        return "කණගාටුයි, සම්බන්ධතාවයේ දෝෂයක්. කරුණාකර නැවත උත්සාහ කරන්න."
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content']
+        else:
+            return "කණගාටුයි, දත්ත ලබා ගැනීමේ දෝෂයක්. කරුණාකර API Key එක පරීක්ෂා කරන්න."
+    except Exception as e:
+        return f"සම්බන්ධතාවයේ දෝෂයකි: {e}"
 
-# --- 2. UI SETTINGS ---
-st.set_page_config(page_title="Sinhala AI Assistant", page_icon="🤖")
+# --- 2. UI SETTINGS (LASSANA KIRIMA) ---
+st.set_page_config(page_title="Sinhala AI Assistant", page_icon="🤖", layout="centered")
 
+# Custom CSS for Professional UI
 st.markdown("""
     <style>
-    .main-title { font-size: 2.8rem; color: #00d4ff; text-align: center; font-weight: 800; }
-    .stChatMessage { border-radius: 12px; }
+    .main { background-color: #0e1117; }
+    .stChatMessage { border-radius: 15px; margin-bottom: 10px; }
+    h1 { color: #00d4ff; text-align: center; font-weight: 800; }
+    .status-tag { color: #888; text-align: center; font-size: 0.9rem; }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා 🤖</h1>", unsafe_allow_html=True)
+# Sidebar with Presentation Info
+with st.sidebar:
+    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=80)
+    st.title("AI Control Panel")
+    st.write("---")
+    st.info("සිංහල සහ සිංග්ලිෂ් යන භාෂා දෙකම නිවැරදිව හඳුනාගැනීමට මෙම පද්ධතිය සමත් වේ.")
+    st.write("**ප්‍රවර්ධක:** Tharusha Rathnayake")
+    st.success("තත්ත්වය: සක්‍රීයයි ✅")
+
+# Main Header
+st.markdown("<h1>සිංහල AI සහායකයා 🤖</h1>", unsafe_allow_html=True)
+st.markdown("<p class='status-tag'>Mistral Large 2 | High-Precision Mode</p>", unsafe_allow_html=True)
 st.write("---")
 
+# Chat History Session
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -71,7 +82,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# User Input
+# Input Logic
 if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
