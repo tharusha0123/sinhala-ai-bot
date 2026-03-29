@@ -3,7 +3,7 @@ import requests
 
 # --- 1. CONFIGURATION ---
 # ඔයා අලුතින් ගත්ත Mistral API Key එක මෙතනට දාන්න
-API_KEY = "vaEacNjbZ7SDe4ug4slDy9aGb8BofCaK"
+API_KEY = "jtvo27GCpDPRPsNTFrFBmc6i2jrgl73g"
 
 def get_mistral_response(user_input):
     url = "https://api.mistral.ai/v1/chat/completions"
