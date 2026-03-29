@@ -2,26 +2,35 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-# ඔයා අලුතින් ගත්ත Mistral API Key එක මෙතනට දාන්න
-API_KEY = "jtvo27GCpDPRPsNTFrFBmc6i2jrgl73g"
+# ඔයාගේ Mistral Key එක මෙතනට දාන්න
+MISTRAL_API_KEY = "jtvo27GCpDPRPsNTFrFBmc6i2jrgl73g"
 
 def get_mistral_response(user_input):
+    url = "https://api.openai.com/v1/chat/completions" # Mistral can use OpenAI format sometimes, but standard is:
     url = "https://api.mistral.ai/v1/chat/completions"
+    
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
         "Content-Type": "application/json"
     }
     
+    # මෙතන තමයි මැජික් එක තියෙන්නේ - Few-Shot Prompting
+    system_message = (
+        "You are a factual Sinhala AI. Your goal is 100% accuracy. "
+        "Strictly follow these examples for logic:\n"
+        "Example 1: User asks 'USA wishalathwaya' -> Understand as 'Area'. Answer: 'ඇමරිකා එක්සත් ජනපදයේ වර්ග ප්‍රමාණය වර්ග කිලෝමීටර් මිලියන 9.8 කි.'\n"
+        "Example 2: User asks 'Usa gaha' -> Understand as 'Tallest tree'. Answer: 'ලෝකයේ උසම ගස වන්නේ හයිපීරියන් (Hyperion) නැමැති රෙඩ්වුඩ් ගසයි.'\n"
+        "Rule: Always translate Singlish to English internally to find the fact, then translate back to perfect Sinhala. "
+        "Do not confuse 'Size/Area' with 'Largest city' or 'Population'."
+    )
+    
     data = {
-        "model": "mistral-large-latest", # සිංහල සඳහා ඉතාම නිවැරදි model එක
+        "model": "mistral-large-latest",
         "messages": [
-            {
-                "role": "system", 
-                "content": "You are a highly accurate Sinhala AI created by Tharusha. Understand Singlish and Sinhala perfectly. Always provide factual, grammatically correct, and natural Sinhala responses. If asked for size/area, provide the exact measurement in sq km."
-            },
+            {"role": "system", "content": system_message},
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.1
+        "temperature": 0.0 # වැරදි උත්තර දෙන එක නවත්තන්න මේක 0.0 ම තියන්න
     }
     
     try:
@@ -29,30 +38,29 @@ def get_mistral_response(user_input):
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content']
         else:
-            return f"Error: {response.status_code}. API Key එක පරීක්ෂා කරන්න."
+            return f"Error: {response.status_code}"
     except Exception as e:
-        return f"සම්බන්ධතාවයේ ගැටලුවකි: {e}"
+        return f"Error: {e}"
 
 # --- 2. UI SETUP ---
 st.set_page_config(page_title="Sinhala AI by Tharusha", page_icon="🤖")
-
 st.title("සිංහල AI සහායකයා 🤖")
-st.caption("High Accuracy Free Mode | Created by Tharusha")
+st.caption("Ultra-Accuracy Mode Enabled")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
+if prompt := st.chat_input("අසන්න..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
+        
     with st.chat_message("assistant"):
-        with st.spinner("නිවැරදි පිළිතුර සොයමින්..."):
+        with st.spinner("නිවැරදි තොරතුරු පරීක්ෂා කරමින්..."):
             answer = get_mistral_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
