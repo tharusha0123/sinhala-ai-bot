@@ -18,7 +18,8 @@ instruction = (
     "5. Do not hallucinate. If you don't know, say you don't know."
 )
 
-model_name="gemini-1.5-flash-latest",
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash-latest", # මෙතන අන්තිමට -latest කෑල්ල දාන්න
     system_instruction=instruction
 )
 
