@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-# ඔයාගේ Mistral API Key එක මෙතනට දාන්න
 MISTRAL_API_KEY = "I8LgRmMLn3brmAO2qLPQquZtsDRdBLaw"
 
 def get_mistral_response(user_input):
@@ -12,33 +11,28 @@ def get_mistral_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # AI එකට බොරු කීම වැළැක්වීමට සහ නිවැරදි සිංහල ලබාදීමට දෙන උපදෙස්
     system_instruction = (
-        "You are a strictly factual Sinhala AI assistant. Follow these absolute rules:\n"
-        "1. FACTUALITY: Only provide real-world facts. If unsure, say 'මම ඒ ගැන නොදනිමි'.\n"
-        "2. NO HALLUCINATION: Never invent names like 'Asēriya'. Verify facts (e.g., Sweden has the most islands).\n"
-        "3. GRAMMAR: Use natural, formal Sinhala. (e.g., 'ලෝකයේ වැඩිම දූපත් ඇති රට ස්වීඩනයයි.')\n"
-        "4. SINGLISH MAPPING: 'usa'=height, 'diga'=length, 'palala'=width, 'duupath'=islands, 'rata'=country, 'gaga'=river.\n"
-        "5. OUTPUT: Direct answer only. 1-2 sentences maximum. No analysis steps."
+        "You are a strictly factual Sinhala AI. Rules:\n"
+        "1. Direct answer only (1-2 sentences).\n"
+        "2. No thinking process or analysis.\n"
+        "3. Interpret Singlish: 'usa'=height, 'diga'=length, 'palala'=width, 'duupath'=islands, 'gaga'=river.\n"
+        "4. Fact Check: Sweden has the most islands (267,000+). Do not hallucinate."
     )
     
     data = {
         "model": "mistral-large-latest",
         "messages": [
             {"role": "system", "content": system_instruction},
-            {"role": "user", "content": f"Answer this factual query accurately in Sinhala: {user_input}"}
+            {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0 # වැරදි අර්ථකථන සම්පූර්ණයෙන්ම නැවැත්වීමට මෙය 0.0 ම තබන්න
+        "temperature": 0.0
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content']
-        else:
-            return "දෝෂයකි: API සම්බන්ධතාවය පරීක්ෂා කරන්න."
+        return response.json()['choices'][0]['message']['content']
     except:
-        return "සම්බන්ධතාවයේ දෝෂයකි."
+        return "දත්ත ලබා ගැනීමේ දෝෂයකි."
 
 # --- 2. UI DESIGN ---
 st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖", layout="centered")
@@ -65,5 +59,23 @@ st.write("---")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Display Messages (මෙතන පේළි ටික මම හරියටම හැදුවා)
 for message in st.session_state.messages:
-    avatar = "🧑‍💻" if message["
+    if message["role"] == "user":
+        with st.chat_message("user", avatar="🧑‍💻"):
+            st.markdown(message["content"])
+    else:
+        with st.chat_message("assistant", avatar="🤖"):
+            st.markdown(message["content"])
+
+# User Input
+if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
+    with st.chat_message("user", avatar="🧑‍💻"):
+        st.markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    with st.chat_message("assistant", avatar="🤖"):
+        with st.spinner("තොරතුරු සොයමින් පවතී..."):
+            answer = get_mistral_response(prompt)
+            st.markdown(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
