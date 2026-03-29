@@ -11,62 +11,51 @@ def get_mistral_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # සිංග්ලිෂ් වචන පටලවා නොගන්නා ලෙස දෙන ඉතාමත් ප්‍රබල උපදෙස් මාලාව
+    # සිංග්ලිෂ් වචන සහ දත්ත 100% නිවැරදිව හඳුනා ගැනීමට දෙන උපදෙස්
     system_instruction = (
-        "You are an expert Sinhala/Singlish interpreter. Your task is to extract the correct intent from Singlish words.\n"
-        "STRICT DEFINITIONS:\n"
-        "- 'usa' = Height / Altitude (උස). Example: 'Lankawe usa' means 'How high is Sri Lanka'.\n"
-        "- 'wishalathwaya' = Area / Size (වර්ග ප්‍රමාණය).\n"
-        "- 'USA' (Capital letters) = United States of America.\n\n"
-        "LOGIC STEP:\n"
-        "1. Identify if the user is asking about a physical measurement (height/area) or a country.\n"
-        "2. If the user asks 'lankawe usa', provide the height of Pidurutalagala in meters.\n"
-        "3. Always answer in clear, formal Sinhala Unicode.\n"
-        "4. Be factually 100% correct."
+        "You are a factual Sinhala AI expert. Use this logic for Singlish:\n"
+        "1. 'usa' = Height/Altitude (පිදුරුතලාගල = 2524m).\n"
+        "2. 'wishalathwaya' = Area/Size (වර්ග කිලෝමීටර් 65,610).\n"
+        "3. 'palala' = Width (උපරිම පළල = 240km).\n"
+        "4. 'diga' = Length (උපරිම දිග = 435km).\n\n"
+        "Always provide the exact measurement in natural Sinhala. Be very precise."
     )
     
     data = {
         "model": "mistral-large-latest",
         "messages": [
             {"role": "system", "content": system_instruction},
-            {"role": "user", "content": f"Analyze this Singlish query and answer accurately in Sinhala: {user_input}"}
+            {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0 # වැරදි අර්ථකථන දීම වැළැක්වීමට 0.0 ම තබන්න
+        "temperature": 0.0 
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
         return response.json()['choices'][0]['message']['content']
     except:
-        return "කණගාටුයි, තොරතුරු ලබා ගැනීමේදී දෝෂයක් සිදු විය."
+        return "තොරතුරු ලබා ගැනීමේ දෝෂයකි."
 
 # --- 2. UI SETTINGS ---
 st.set_page_config(page_title="Sinhala AI Pro", page_icon="🚀")
 
+# Custom CSS
 st.markdown("""
     <style>
-    .main-title {
-        font-size: 2.5rem;
-        color: #00d4ff;
-        text-align: center;
-        font-weight: bold;
-    }
+    .main-title { font-size: 2.5rem; color: #00d4ff; text-align: center; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# Main Title
-st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා 🤖</h1>", unsafe_allow_html=True)
 st.write("---")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# User Input
 if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
