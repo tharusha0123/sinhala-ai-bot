@@ -8,26 +8,15 @@ def get_mistral_response(user_input):
     url = "https://api.mistral.ai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
     
-    # මේ තමයි රහස - අපි දත්ත ටික AI එකට කලින්ම දෙනවා (Knowledge Base)
-    knowledge_base = """
-    FACTS TO USE:
-    - Sri Lanka Highest Point: Pidurutalagala (2524m).
-    - Sri Lanka Max Width: 240km.
-    - Sri Lanka Max Length: 435km.
-    - Sri Lanka Area: 65,610 sq km.
-    - World's Most Islands: Sweden (over 267,000 islands).
-    - World's Longest River: Nile (6,650km).
-    - Singlish Mapping: 'usa'=height, 'palala'=width, 'diga'=length, 'duupath'=islands, 'gaga'=river.
-    """
-    
+    # සිංග්ලිෂ් වචන වල තේරුම සහ දත්ත නිවැරදිව හඳුනා ගැනීමට දෙන නවතම උපදෙස්
     system_instruction = (
-        f"{knowledge_base}\n"
-        "You are a professional factual AI. Rules:\n"
-        "1. Use the facts provided above ONLY. Do not invent facts.\n"
-        "2. Answer in perfect, formal Sinhala. (No 'Asēriya' or weird words).\n"
-        "3. If 'lankawe usa' is asked, answer about Pidurutalagala.\n"
-        "4. If 'duupath' is asked, answer about Sweden.\n"
-        "5. Direct 1-sentence answer only."
+        "You are a professional factual AI assistant. Rules:\n"
+        "1. Understand Singlish intent: 'usa'=height, 'diga'=length, 'palala'=width, 'lokuma rata'=largest country, 'duupath'=islands.\n"
+        "2. First, identify the core question. (e.g., if asked about 'lokuma rata', it's Russia).\n"
+        "3. Provide the answer in natural, grammatically correct Sinhala Unicode.\n"
+        "4. Keep the answer direct and short (1-2 sentences).\n"
+        "5. Example: 'lokaye lokuma rata mokakd' -> 'ලෝකයේ විශාලතම රට රුසියාවයි.'\n"
+        "6. If asked about Sri Lanka's measurements: Height=2524m, Width=240km, Length=435km."
     )
     
     data = {
@@ -36,29 +25,28 @@ def get_mistral_response(user_input):
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0 # Very important for accuracy
+        "temperature": 0.1 # නිවැරදි බව සහ නම්‍යශීලී බව අතර සමබරතාවයක් සඳහා
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
-        return response.json()['choices'][0]['message']['content']
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content']
+        else:
+            return "API සම්බන්ධතාවයේ දෝෂයකි."
     except:
-        return "දත්ත ලබා ගැනීමේ දෝෂයකි."
+        return "දත්ත ලබා ගැනීමට නොහැකි විය."
 
-# --- 2. UI DESIGN (PROFESSIONAL) ---
+# --- 2. UI DESIGN ---
 st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖")
 
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(135deg, #0f0c29, #302b63); color: white; }
     .main-title { font-size: 2.5rem; color: #00d4ff; text-align: center; font-weight: bold; }
+    .stChatMessage { background: rgba(255, 255, 255, 0.05) !important; border-radius: 15px !important; }
     </style>
     """, unsafe_allow_html=True)
-
-with st.sidebar:
-    st.title("🚀 Control Center")
-    st.info("Verified High-Accuracy Mode")
-    st.write(f"Developer: Tharusha")
 
 st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා</h1>", unsafe_allow_html=True)
 st.write("---")
