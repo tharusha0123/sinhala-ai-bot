@@ -6,17 +6,28 @@ MISTRAL_API_KEY = "I8LgRmMLn3brmAO2qLPQquZtsDRdBLaw"
 
 def get_mistral_response(user_input):
     url = "https://api.mistral.ai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {MISTRAL_API_KEY}", "Content-Type": "application/json"}
+    
+    # මේ තමයි රහස - අපි දත්ත ටික AI එකට කලින්ම දෙනවා (Knowledge Base)
+    knowledge_base = """
+    FACTS TO USE:
+    - Sri Lanka Highest Point: Pidurutalagala (2524m).
+    - Sri Lanka Max Width: 240km.
+    - Sri Lanka Max Length: 435km.
+    - Sri Lanka Area: 65,610 sq km.
+    - World's Most Islands: Sweden (over 267,000 islands).
+    - World's Longest River: Nile (6,650km).
+    - Singlish Mapping: 'usa'=height, 'palala'=width, 'diga'=length, 'duupath'=islands, 'gaga'=river.
+    """
     
     system_instruction = (
-        "You are a strictly factual Sinhala AI. Rules:\n"
-        "1. Direct answer only (1-2 sentences).\n"
-        "2. No thinking process or analysis.\n"
-        "3. Interpret Singlish: 'usa'=height, 'diga'=length, 'palala'=width, 'duupath'=islands, 'gaga'=river.\n"
-        "4. Fact Check: Sweden has the most islands (267,000+). Do not hallucinate."
+        f"{knowledge_base}\n"
+        "You are a professional factual AI. Rules:\n"
+        "1. Use the facts provided above ONLY. Do not invent facts.\n"
+        "2. Answer in perfect, formal Sinhala. (No 'Asēriya' or weird words).\n"
+        "3. If 'lankawe usa' is asked, answer about Pidurutalagala.\n"
+        "4. If 'duupath' is asked, answer about Sweden.\n"
+        "5. Direct 1-sentence answer only."
     )
     
     data = {
@@ -25,7 +36,7 @@ def get_mistral_response(user_input):
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0
+        "temperature": 0.0 # Very important for accuracy
     }
     
     try:
@@ -34,48 +45,38 @@ def get_mistral_response(user_input):
     except:
         return "දත්ත ලබා ගැනීමේ දෝෂයකි."
 
-# --- 2. UI DESIGN ---
-st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖", layout="centered")
+# --- 2. UI DESIGN (PROFESSIONAL) ---
+st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖")
 
 st.markdown("""
     <style>
-    .stApp { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); color: white; }
-    .stChatMessage { background: rgba(255, 255, 255, 0.05) !important; backdrop-filter: blur(10px); border-radius: 15px !important; }
-    .main-title { font-size: 3rem; font-weight: 800; text-align: center; background: linear-gradient(to right, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stApp { background: linear-gradient(135deg, #0f0c29, #302b63); color: white; }
+    .main-title { font-size: 2.5rem; color: #00d4ff; text-align: center; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. SIDEBAR ---
 with st.sidebar:
-    st.markdown("<h2 style='color:#00d4ff;'>🚀 AI Panel</h2>", unsafe_allow_html=True)
-    st.write("---")
-    st.success("Mode: Ultra-Accuracy ✅")
-    st.write(f"**Developer:** Tharusha Rathnayake")
+    st.title("🚀 Control Center")
+    st.info("Verified High-Accuracy Mode")
+    st.write(f"Developer: Tharusha")
 
-# --- 4. MAIN INTERFACE ---
 st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා</h1>", unsafe_allow_html=True)
 st.write("---")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display Messages (මෙතන පේළි ටික මම හරියටම හැදුවා)
 for message in st.session_state.messages:
-    if message["role"] == "user":
-        with st.chat_message("user", avatar="🧑‍💻"):
-            st.markdown(message["content"])
-    else:
-        with st.chat_message("assistant", avatar="🤖"):
-            st.markdown(message["content"])
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# User Input
 if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("තොරතුරු සොයමින් පවතී..."):
+        with st.spinner("තොරතුරු සොයමින්..."):
             answer = get_mistral_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
