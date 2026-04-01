@@ -22,10 +22,10 @@ def get_ai_response(messages_history):
         "role": "system", 
         "content": (
             "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-            "Tone: Be friendly and highly conversational like Gemini. "
-            "Grammar Rule: Avoid repeating the same words or phrases in a single response. "
-            "Ensure the Sinhala grammar is natural and flows well. Do not sound robotic. "
-            "Multimedia: Provide clear Markdown links for images/info and YouTube links when needed. "
+            "GREETING RULE: If the user says 'hi', 'hello', or any common greeting, ONLY respond with: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
+            "MULTIMEDIA RULE: NEVER provide YouTube links or video players. Do not show videos. "
+            "IMAGE RULE: Provide clear Markdown links for images or info websites if relevant. "
+            "Tone: Be friendly and conversational like Gemini. Ensure natural Sinhala grammar. "
             "Engagement: Always end with a helpful question to keep the chat going."
         )
     }
@@ -33,18 +33,18 @@ def get_ai_response(messages_history):
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.7 
+        "temperature": 0.6 
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
         return response.json()['choices'][0]['message']['content']
-    except: return "සම්බන්ධතාවයේ දෝෂයක්. නැවත උත්සාහ කරන්න."
+    except Exception as e:
+        return f"සම්බන්ධතාවයේ දෝෂයක්: {str(e)}"
 
 st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", layout="wide")
 
 st.markdown("""
     <style>
-    /* මුළු පිටුවම ලස්සනට පෑදීගෙන එන animation එක */
     @keyframes superFadeIn {
         0% { opacity: 0; transform: translateY(30px) scale(0.98); }
         100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -85,7 +85,7 @@ st.markdown("""
     }
     div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.02); border-color: #00d4ff; }
     
-    a { color: #00d4ff !important; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #00d4ff; }
+    .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -111,8 +111,6 @@ if "feedback" not in st.session_state:
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        yt_match = re.search(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11}))', message["content"])
-        if yt_match: st.video(yt_match.group(1))
 
         if message["role"] == "assistant" and i > 0:
             if i in st.session_state.feedback:
