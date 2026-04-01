@@ -37,6 +37,7 @@ with st.sidebar:
     st.title("Settings")
     if st.button("🗑️ Clear Chat History"):
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්."}]
+        st.session_state.feedback = {}
         st.rerun()
     st.write("---")
     st.info("Created by **Tharusha Rathnayake**.")
@@ -52,7 +53,6 @@ st.markdown("""
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
     .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; }
     
-    /* Hover Animation එක නැවත ඇතුළත් කළා */
     div[data-testid="stChatMessage"] { 
         border-radius: 25px !important; 
         border: 1px solid rgba(255, 255, 255, 0.15); 
@@ -90,14 +90,25 @@ st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්."}]
+if "feedback" not in st.session_state:
+    st.session_state.feedback = {}
 
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if message["role"] == "assistant" and i > 0:
-            c1, c2, c3 = st.columns([0.04, 0.04, 0.92])
-            with c1: st.button("👍", key=f"up_{i}")
-            with c2: st.button("👎", key=f"down_{i}")
+            if i in st.session_state.feedback:
+                st.write("✅")
+            else:
+                c1, c2, c3 = st.columns([0.04, 0.04, 0.92])
+                with c1: 
+                    if st.button("👍", key=f"up_{i}"):
+                        st.session_state.feedback[i] = True
+                        st.rerun()
+                with c2: 
+                    if st.button("👎", key=f"down_{i}"):
+                        st.session_state.feedback[i] = True
+                        st.rerun()
 
 if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
