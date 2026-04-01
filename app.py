@@ -1,48 +1,52 @@
 import streamlit as st
-import google.generativeai as genai
+import requests
 
 # --- 1. CONFIGURATION ---
-# ඔයාගේ Gemini API Key එක මෙතනට ලබා දෙන්න
-GEMINI_API_KEY = "AIzaSyAhHLwj-hFgTC7jlCM0zMXIQ8z3vcwNl9I"
+# ඔයාගේ Apilage API Key එක මෙතනට ලබා දෙන්න
+# (සාමාන්‍යයෙන් මේක apilage.io dashboard එකෙන් ගන්න පුළුවන්)
+APILAGE_API_KEY = "apk_f6c42e5eb8e57c987163218f9845413b55303f7e46f869e3"
 
-# Gemini Config කිරීම
-genai.configure(api_key=GEMINI_API_KEY)
-
-def get_gemini_response(user_input):
-    # Model එක තෝරා ගැනීම (Gemini 1.5 Flash වඩාත් වේගවත්ය)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+def get_apilage_response(user_input):
+    url = "https://api.apilage.io/v1/chat/completions" # Apilage Endpoint එක
     
-    # AI එකට දෙන විශේෂ උපදෙස් (System Prompt)
-    # මේකෙන් සිංහල භාෂාව වඩාත් නිවැරදිව ලබා දීමට AI එක පොළඹවනවා.
-    system_instruction = (
-        "You are a highly accurate Sinhala AI. To ensure 100% accuracy, follow these steps:\n"
-        "1. Translate the user's Singlish/Sinhala input into English mentally.\n"
-        "2. Find the correct world fact for that English question.\n"
-        "3. Translate that fact into perfect, natural Sinhala Unicode.\n"
-        "4. Context rules: 'usa'=height, 'diga'=length, 'palala'=width, 'rata'=country, 'podima'=smallest, 'lokuma'=largest.\n"
-        "5. Direct answer only. 1 sentence max."
-    )
+    headers = {
+        "Authorization": f"Bearer {APILAGE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Apilage වල සිංහල හැකියාව උපරිම කිරීමට සකස් කළ Prompt එක
+    data = {
+        "model": "apilage-1", # හෝ dashboard එකේ සඳහන් model එක
+        "messages": [
+            {
+                "role": "system", 
+                "content": "You are a helpful and accurate Sinhala AI assistant. Provide answers in natural Sinhala Unicode."
+            },
+            {"role": "user", "content": user_input}
+        ],
+        "temperature": 0.5
+    }
     
     try:
-        # Gemini හරහා පිළිතුර ලබා ගැනීම
-        response = model.generate_content(f"{system_instruction}\n\nUser Question: {user_input}")
-        return response.text
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status() # Error එකක් ආවොත් අඳුනා ගැනීමට
+        result = response.json()
+        return result['choices'][0]['message']['content']
     except Exception as e:
         return f"දත්ත ලබා ගැනීමට නොහැකි විය: {str(e)}"
 
 # --- 2. UI DESIGN ---
-st.set_page_config(page_title="Sinhala AI Pro (Gemini)", page_icon="🤖")
+st.set_page_config(page_title="Sinhala AI (Apilage)", page_icon="🇱🇰")
 
-# Interface එක ලස්සන කිරීමට CSS
+# සරල සහ ලස්සන Styling
 st.markdown("""
     <style>
     .stApp { background: #0e1117; color: white; }
-    .main-title { font-size: 2.5rem; color: #00d4ff; text-align: center; font-weight: bold; }
-    .stChatMessage { border-radius: 15px !important; }
+    .main-title { font-size: 2.2rem; color: #ffcc00; text-align: center; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා (Gemini)</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා (Apilage)</h1>", unsafe_allow_html=True)
 st.write("---")
 
 # Chat History පවත්වා ගැනීම
@@ -56,14 +60,13 @@ for message in st.session_state.messages:
 
 # User Input ලබා ගැනීම
 if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
-    # User message එක පෙන්වීම
-    with st.chat_message("user", avatar="🧑‍💻"):
+    with st.chat_message("user"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     # AI පිළිතුර ලබා ගැනීම
-    with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("Gemini සිතමින් පවතී..."):
-            answer = get_gemini_response(prompt)
+    with st.chat_message("assistant"):
+        with st.spinner("සිතමින් පවතී..."):
+            answer = get_apilage_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
