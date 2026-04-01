@@ -13,17 +13,22 @@ def load_lottieurl(url: str):
 
 lottie_ai = load_lottieurl("https://lottie.host/880280a3-f09b-449e-953e-51c36093867c/m76Y9Y9H6C.json")
 
-def get_ai_response(user_input):
+def get_ai_response(messages_history):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-    system_instruction = (
-        "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-        "If user says 'hi', 'hello' or any greeting, ONLY respond with: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
-        "Always respond in natural Sinhala Unicode."
-    )
+    
+    system_msg = {
+        "role": "system", 
+        "content": "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
+                   "If user says 'hi', 'hello' or any greeting, ONLY respond with: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
+                   "Always respond in natural Sinhala Unicode."
+    }
+    
+    full_messages = [system_msg] + messages_history
+    
     data = {
         "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "system", "content": system_instruction}, {"role": "user", "content": user_input}],
+        "messages": full_messages,
         "temperature": 0.4 
     }
     try:
@@ -120,7 +125,8 @@ if prompt := st.chat_input("සිංහලෙන් හෝ English වලින
     with st.chat_message("assistant", avatar="🤖"):
         placeholder = st.empty()
         with st.spinner("සිතමින් පවතී..."):
-            full_response = get_ai_response(prompt)
+            # මෙතනදී අපි මුළු History එකම යවනවා
+            full_response = get_ai_response(st.session_state.messages)
             typed_text = ""
             for char in full_response:
                 typed_text += char
