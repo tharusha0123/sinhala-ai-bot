@@ -2,51 +2,42 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-# මෙතනට ඔයාගේ Groq API Key එක ඇතුළත් කරන්න
+# මෙතනට ඔයාගේ ඇත්තම Groq API Key එක ඇතුළත් කරන්න
 GROQ_API_KEY = "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"
 
 def get_ai_response(user_input):
-    url = "https://api.apilageai.lk/v1/chat/completions" # නැත්නම් Groq URL එක පාවිච්චි කරන්න
     url = "https://api.groq.com/openai/v1/chat/completions"
-    
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
-    
-    # සිංහල ව්‍යාකරණ නිවැරදි කිරීමට ලබා දෙන දැඩි උපදෙස්
-    system_instruction = (
-        "You are a professional Sinhala AI assistant with perfect grammar skills. "
-        "Strictly follow these rules for Sinhala responses:\n"
-        "1. Use natural Sinhala sentence structures (SOV - Subject-Object-Verb).\n"
-        "2. Ensure proper subject-verb agreement (උක්ත-ආඛ්‍යාත ගැලපීම).\n"
-        "3. Use spoken-style Sinhala (කථන භාෂාව) for a friendly vibe, but keep it grammatically correct.\n"
-        "4. Avoid direct word-for-word translations from English.\n"
-        "5. If the user asks in Singlish, understand the intent and reply in perfect Sinhala Unicode.\n"
-        "6. Do not mix formal and informal Sinhala in the same sentence."
-    )
-    
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
-            {"role": "system", "content": system_instruction},
+            {
+                "role": "system", 
+                "content": "You are a professional Sinhala AI assistant. Respond in natural, accurate Sinhala Unicode. Understand Singlish perfectly."
+            },
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.4 # ව්‍යාකරණ වැරදීම් අවම කිරීමට temperature එක අඩු කළා
+        "temperature": 0.6
     }
-    
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
         return response.json()['choices'][0]['message']['content']
     except:
-        return "කණගාටුයි, පිළිතුර ලබා ගැනීමේදී ගැටලුවක් මතු විය. නැවත උත්සාහ කරන්න."
+        return "දත්ත ලබා ගැනීමේදී දෝෂයක් සිදු විය. කරුණාකර නැවත උත්සාහ කරන්න."
 
 # --- 2. UI DESIGN ---
 st.set_page_config(page_title="සිංහල Chat Bot", page_icon="🤖", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; }
+    .stApp {
+        background-color: #0e1117;
+    }
+    
+    /* සිංහල Chat Bot මාතෘකාව */
     .main-title {
         font-size: 50px !important;
         font-weight: 900;
@@ -57,17 +48,25 @@ st.markdown("""
         margin-top: -50px;
         margin-bottom: 5px;
     }
+    
     .footer {
         text-align: center;
         font-size: 15px;
         color: #8892b0;
         font-style: italic;
         margin-bottom: 30px;
+        letter-spacing: 1px;
     }
-    .stChatMessage { border-radius: 15px !important; background-color: #1a202c !important; }
+
+    .stChatMessage {
+        border-radius: 15px !important;
+        background-color: #1a202c !important;
+        margin-bottom: 10px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
+# නව මාතෘකාව සහ ඔයාගේ නම
 st.markdown("<h1 class='main-title'>සිංහල Chat Bot</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 st.write("---")
@@ -86,7 +85,7 @@ if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලි�
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("පිළිතුර සකසමින්..."):
+        with st.spinner("සිතමින් පවතී..."):
             answer = get_ai_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
