@@ -22,19 +22,20 @@ def get_ai_response(messages_history):
         "role": "system", 
         "content": (
             "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-            "RESPONSE LENGTH RULE: Adapt your response length based on the topic. "
-            "1. For simple factual questions (e.g., 'Longest river', 'Highest mountain'), give a concise answer with 2-3 key facts. "
-            "2. For broad or complex topics (e.g., 'Amazon Forest', 'Artificial Intelligence', 'History'), provide a detailed, long, and structured explanation. "
-            "GREETING RULE: If the user says 'hi' or 'hello', ONLY respond with: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
-            "MULTIMEDIA RULE: NEVER provide YouTube links. Only provide clear image/info links if it adds value. "
-            "Tone: Friendly, professional, and conversational like Gemini. Always use natural Sinhala Unicode."
+            "TONE: Be extremely friendly, empathetic, and chatty like a close friend or Google Gemini. "
+            "Avoid robotic language. Use warm, natural Sinhala Unicode. "
+            "ENGAGEMENT: Always show interest in what the user says and end with a thought-provoking follow-up question. "
+            "RESPONSE STYLE: If it's a quick fact, keep it short and sweet. If it's a big topic like 'Amazon', be detailed and explain it like a storyteller. "
+            "MULTIMEDIA: Naturally include info/image links using [Title](URL) when talking about places or cool things. "
+            "GREETING: If user says 'hi' or 'hello', ONLY say: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
+            "STRICT RULE: NO YouTube links ever."
         )
     }
     
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.65 
+        "temperature": 0.85 # මිත්‍රශීලී බව සහ ස්වාභාවික ගතිය වැඩි කිරීමට 0.85 ට දැම්මා
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
@@ -86,6 +87,9 @@ st.markdown("""
     }
     div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.02); border-color: #00d4ff; }
     
+    a { color: #00d4ff !important; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #00d4ff; }
+    a:hover { color: #00ff88 !important; border-bottom: 1px solid #00ff88; }
+    
     .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -127,7 +131,7 @@ for i, message in enumerate(st.session_state.messages):
                         st.session_state.feedback[i] = True
                         st.rerun()
 
-if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
+if prompt := st.chat_input("යාලුවෙක් වගේ මගෙන් ඕනෑම දෙයක් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
