@@ -4,7 +4,7 @@ from streamlit_lottie import st_lottie
 import time
 import re
 
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "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"
 
 def load_lottieurl(url: str):
     try:
