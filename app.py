@@ -22,23 +22,24 @@ def get_ai_response(messages_history):
         "role": "system", 
         "content": (
             "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-            "TONE: Be extremely friendly, empathetic, and chatty like a close friend or Google Gemini. "
-            "Avoid robotic language. Use warm, natural Sinhala Unicode. "
-            "ENGAGEMENT: Always show interest in what the user says and end with a thought-provoking follow-up question. "
-            "RESPONSE STYLE: If it's a quick fact, keep it short and sweet. If it's a big topic like 'Amazon', be detailed and explain it like a storyteller. "
-            "MULTIMEDIA: Naturally include info/image links using [Title](URL) when talking about places or cool things. "
-            "GREETING: If user says 'hi' or 'hello', ONLY say: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
-            "STRICT RULE: NO YouTube links ever."
+            "MEMORY RULE: You must remember the user's name and previous details mentioned in the chat. "
+            "DETAILED RESPONSES: Provide in-depth, long, and comprehensive explanations for all topics. "
+            "Break down information into bullet points or numbered lists for clarity. "
+            "TONE: Be extremely friendly, like a close friend or Gemini. Use natural Sinhala Unicode. "
+            "GREETING: If user says 'hi' or 'hello', ONLY respond with: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?' "
+            "MULTIMEDIA: Provide clear [Title](URL) links for images or info if helpful. NO YouTube links. "
+            "ENGAGEMENT: Always end with a thoughtful follow-up question."
         )
     }
     
+    # මෙතනදී මුළු ඉතිහාසයම (history) අපි API එකට යවනවා memory එක තියාගන්න
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.85 # මිත්‍රශීලී බව සහ ස්වාභාවික ගතිය වැඩි කිරීමට 0.85 ට දැම්මා
+        "temperature": 0.75 
     }
     try:
-        response = requests.post(url, headers=headers, json=data, timeout=25)
+        response = requests.post(url, headers=headers, json=data, timeout=30)
         return response.json()['choices'][0]['message']['content']
     except Exception as e:
         return f"සම්බන්ධතාවයේ දෝෂයක්: {str(e)}"
@@ -48,23 +49,20 @@ st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", 
 st.markdown("""
     <style>
     @keyframes superFadeIn {
-        0% { opacity: 0; transform: translateY(30px) scale(0.98); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
+        0% { opacity: 0; transform: translateY(30px); }
+        100% { opacity: 1; transform: translateY(0); }
     }
-
     [data-testid="stAppViewContainer"] { 
         background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; 
         color: white !important;
-        animation: superFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: superFadeIn 1s ease-out;
     }
-    
     @media (prefers-color-scheme: light) {
         [data-testid="stAppViewContainer"] { background: #ffffff !important; color: #1a202c !important; }
         .stMarkdown, p, h1, h2, h3, span { color: #1a202c !important; }
     }
-
     .main-title { 
-        font-size: clamp(35px, 6vw, 65px) !important; 
+        font-size: clamp(35px, 6vw, 60px) !important; 
         font-weight: 900; 
         text-align: center; 
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
@@ -73,30 +71,23 @@ st.markdown("""
         -webkit-text-fill-color: transparent; 
         animation: gradientBG 8s ease infinite; 
     }
-
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
-    .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; letter-spacing: 1.5px; }
-    
+    .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; }
     div[data-testid="stChatMessage"] { 
-        border-radius: 25px !important; 
-        border: 1px solid rgba(255, 255, 255, 0.15); 
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(15px); 
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        animation: superFadeIn 0.8s ease-out;
+        border-radius: 20px !important; 
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        background: rgba(255, 255, 255, 0.03) !important;
+        backdrop-filter: blur(10px); 
+        animation: superFadeIn 0.6s ease-out;
     }
-    div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.02); border-color: #00d4ff; }
-    
-    a { color: #00d4ff !important; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #00d4ff; }
-    a:hover { color: #00ff88 !important; border-bottom: 1px solid #00ff88; }
-    
-    .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
+    div[data-testid="stChatMessage"]:hover { transform: translateY(-5px); border-color: #00d4ff; }
+    a { color: #00d4ff !important; font-weight: bold; text-decoration: none; }
     </style>
     """, unsafe_allow_html=True)
 
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=80)
-    if st.button("🗑️ Clear Chat"):
+    if st.button("🗑️ Clear Chat History"):
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. අද මම ඔබට උදව් කරන්නේ කොහොමද?"}]
         st.session_state.feedback = {}
         st.rerun()
@@ -109,14 +100,13 @@ st.markdown("<h1 class='main-title'>සිංහල Chat Bot Pro</h1>", unsafe_a
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්. අද අපි මොනවා ගැනද කතා කරන්නේ?"}]
+    st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. මගෙන් ඕනෑම දෙයක් අසන්න. අපි අද මොනවා ගැනද කතා කරන්නේ?"}]
 if "feedback" not in st.session_state:
     st.session_state.feedback = {}
 
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
         if message["role"] == "assistant" and i > 0:
             if i in st.session_state.feedback:
                 st.write("✅")
@@ -131,7 +121,7 @@ for i, message in enumerate(st.session_state.messages):
                         st.session_state.feedback[i] = True
                         st.rerun()
 
-if prompt := st.chat_input("යාලුවෙක් වගේ මගෙන් ඕනෑම දෙයක් අසන්න..."):
+if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -139,6 +129,7 @@ if prompt := st.chat_input("යාලුවෙක් වගේ මගෙන් �
     with st.chat_message("assistant", avatar="🤖"):
         placeholder = st.empty()
         with st.spinner("සිතමින් පවතී..."):
+            # මෙතනදී තමයි memory එක වැඩ කරන්නේ
             full_response = get_ai_response(st.session_state.messages)
             typed_text = ""
             for char in full_response:
