@@ -18,7 +18,7 @@ def get_ai_response(user_input):
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     system_instruction = (
         "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-        "Rules: 1. Always respond in natural Sinhala Unicode. 2. Be friendly and professional."
+        "Rules: Always respond in natural Sinhala Unicode. Be friendly."
     )
     data = {
         "model": "llama-3.3-70b-versatile",
@@ -28,49 +28,47 @@ def get_ai_response(user_input):
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
         return response.json()['choices'][0]['message']['content']
-    except: return "කණගාටුයි, සම්බන්ධතාවයේ දෝෂයක්."
+    except: return "සම්බන්ධතාවයේ දෝෂයක්. නැවත උත්සාහ කරන්න."
 
-# --- 2. UI DESIGN (Theming Fix) ---
+# --- 2. THEME ENGINE (FORCE LIGHT/DARK COLORS) ---
 st.set_page_config(page_title="සිංහල Chat Bot", page_icon="🤖", layout="centered")
 
+# මේ CSS එකෙන් Streamlit එකේ Default වර්ණ සම්පූර්ණයෙන්ම පාලනය කරනවා
 st.markdown("""
     <style>
-    /* 1. DARK MODE (Default) */
-    .stApp {
+    /* Dark Mode (Default) */
+    [data-testid="stAppViewContainer"] {
         background-color: #0e1117 !important;
-        color: #ffffff !important;
+        color: white !important;
     }
-
-    /* 2. LIGHT MODE DETECTION & OVERRIDE */
+    
+    /* Light Mode එකේදී බලහත්කාරයෙන් වර්ණ වෙනස් කිරීම */
     @media (prefers-color-scheme: light) {
-        .stApp {
+        [data-testid="stAppViewContainer"], .stApp {
             background-color: #ffffff !important;
             color: #1a202c !important;
         }
-        .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        .stMarkdown, p, span, label {
             color: #1a202c !important;
         }
-        /* Chat bubble background for light mode */
-        div[data-testid="stChatMessage"] {
-            background-color: #f0f2f6 !important;
+        /* Chat Input එකේ අකුරු පේන්න */
+        .stChatInput textarea {
             color: #1a202c !important;
-            border: 1px solid #ddd !important;
+            background-color: #f0f2f6 !important;
         }
     }
 
-    /* 3. SHARED STYLES (Animations & Titles) */
+    /* Gradient Title Animation */
     .main-title {
-        font-size: clamp(40px, 8vw, 65px) !important;
+        font-size: clamp(40px, 8vw, 60px) !important;
         font-weight: 900;
         text-align: center;
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
         background-size: 400% 400%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: gradientBG 10s ease infinite;
-        margin-top: -30px;
+        animation: gradientBG 8s ease infinite;
     }
-
     @keyframes gradientBG {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -82,22 +80,16 @@ st.markdown("""
         font-size: 16px;
         color: #00ff88;
         font-weight: bold;
-        margin-bottom: 20px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    }
-
-    div[data-testid="stChatMessage"] {
-        border-radius: 20px !important;
-        margin-bottom: 10px;
-        padding: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# Animation
+# Animation & UI
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    if lottie_ai: st_lottie(lottie_ai, height=200, key="ai_anim")
+    if lottie_ai: st_lottie(lottie_ai, height=180, key="ai_anim")
 
 st.markdown("<h1 class='main-title'>සිංහල Chat Bot</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
