@@ -2,7 +2,7 @@ import streamlit as st
 from groq import Groq
 
 # API Key එක ලබා ගැනීම
-GROQ_API_KEY = st.secrets.get("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")
+GROQ_API_KEY = "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"
 client = Groq(api_key=GROQ_API_KEY)
 
 def get_groq_response(user_input):
