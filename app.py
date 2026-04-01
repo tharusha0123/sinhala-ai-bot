@@ -3,7 +3,7 @@ import google.generativeai as genai
 
 # --- 1. CONFIGURATION ---
 # ඔයාගේ Gemini API Key එක මෙතනට ලබා දෙන්න
-GEMINI_API_KEY = "AIzaSyBsyVa0f8v1VWPxKArVpe3cyxWODuKl-fM"
+GEMINI_API_KEY = "AIzaSyAhHLwj-hFgTC7jlCM0zMXIQ8z3vcwNl9I"
 
 # Gemini Config කිරීම
 genai.configure(api_key=GEMINI_API_KEY)
