@@ -2,8 +2,7 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-# මෙතනට ඔයාගේ ඇත්තම Groq API Key එක ඇතුළත් කරන්න
-GROQ_API_KEY = "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"
+GROQ_API_KEY = "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"
 
 def get_ai_response(user_input):
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -12,15 +11,16 @@ def get_ai_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # ඕනෑම භාෂාවකින් ඇහුවත් සිංහලෙන් පමණක් පිළිතුරු දීමට දෙන උපදෙස්
+    # Singlish රටාවන් හඳුනාගැනීමට දෙන උදාහරණ සහිත උපදෙස්
     system_instruction = (
-        "You are a professional Sinhala AI assistant. "
-        "Your primary rule is: NO MATTER WHAT LANGUAGE THE USER USES (English, Singlish, or Sinhala), "
-        "YOU MUST ALWAYS RESPOND IN NATURAL, ACCURATE SINHALA UNICODE.\n"
-        "1. If the user asks in English, translate the answer to Sinhala.\n"
-        "2. If the user asks in Singlish, understand the intent and reply in Sinhala Unicode.\n"
-        "3. Ensure the Sinhala grammar is perfect (Subject-Verb agreement).\n"
-        "4. Be helpful, friendly, and accurate."
+        "You are an advanced Sinhala AI. You have a deep understanding of 'Singlish' (Sinhala written in Roman/English characters).\n"
+        "Rules:\n"
+        "1. ALWAYS respond in natural Sinhala Unicode, regardless of the input language.\n"
+        "2. Recognize Singlish patterns like: 'mkkd' -> 'මොකක්ද', 'khmda' -> 'කොහොමද', 'oyata' -> 'ඔයාට', 'nk' -> 'නැහැ', 'wada' -> 'වැඩ'.\n"
+        "3. Understand variations like 'u' instead of 'o' (e.g., 'mukkda' or 'mukadda').\n"
+        "4. If the user asks 'Oya mkkd karanne?', understand it as 'ඔයා මොකක්ද කරන්නේ?' and reply in Sinhala.\n"
+        "5. If the input is pure English, still reply in Sinhala.\n"
+        "6. Maintain high-quality grammar and friendly tone."
     )
     
     data = {
@@ -29,7 +29,7 @@ def get_ai_response(user_input):
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.4 
+        "temperature": 0.5 # Singlish අනුමාන කිරීමට 0.5 හෝ 0.6 ඉතා හොඳයි
     }
     
     try:
@@ -44,7 +44,6 @@ st.set_page_config(page_title="සිංහල Chat Bot", page_icon="🤖", layo
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; }
-    
     .main-title {
         font-size: 55px !important;
         font-weight: 900;
@@ -55,7 +54,6 @@ st.markdown("""
         margin-top: -50px;
         margin-bottom: 5px;
     }
-    
     .footer {
         text-align: center;
         font-size: 16px;
@@ -63,9 +61,7 @@ st.markdown("""
         font-style: italic;
         margin-bottom: 30px;
     }
-
     .stChatMessage {
-        border: 1px solid #1e293b;
         border-radius: 20px !important;
         background-color: #1a202c !important;
         margin-bottom: 15px;
@@ -73,7 +69,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# මාතෘකාව සහ Creator නම
 st.markdown("<h1 class='main-title'>සිංහල Chat Bot</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 st.write("---")
@@ -86,7 +81,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Chat Input Bar
 if prompt := st.chat_input("සිංහලෙන්, Singlish වලින් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
