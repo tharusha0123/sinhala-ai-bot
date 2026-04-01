@@ -18,20 +18,24 @@ def get_ai_response(messages_history):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     
+    # Gemini වගේ friendly වෙන්න සහ ලින්ක් නිවැරදිව දෙන්න දෙන උපදෙස්
     system_msg = {
         "role": "system", 
         "content": (
-            "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. Respond in natural Sinhala Unicode. "
-            "MULTIMEDIA RULES: 1. Provide relevant images ONLY from Wikipedia/Wikimedia Commons or Unsplash using ![description](url). "
-            "2. Provide YouTube links only if highly relevant. 3. Use Markdown links for external websites. "
-            "4. NEVER hallucinate or make up broken URLs. If no real link is found, do not provide one."
+            "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
+            "Tone: Be highly friendly, conversational, and helpful like Google Gemini. "
+            "Engagement: Always try to end your response with a follow-up question to keep the conversation going. "
+            "Multimedia: Instead of showing broken images, provide clear Markdown links with titles. "
+            "Example: '[මහවැලි ගඟේ පින්තූරය මෙතනින් බලන්න](https://link-to-image.jpg)'. "
+            "Provide YouTube links and helpful website links whenever relevant. "
+            "Language: Use natural, modern Sinhala Unicode."
         )
     }
     
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.4 
+        "temperature": 0.7 # තවත් මිත්‍රශීලී සහ නිර්මාණශීලී වෙන්න 0.7 ට දැම්මා
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
@@ -56,13 +60,13 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.15); 
         background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(15px); 
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+        transition: all 0.5s ease; 
     }
-    div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.01); }
+    div[data-testid="stChatMessage"]:hover { transform: translateY(-5px); }
     
-    img { border-radius: 15px; border: 2px solid rgba(0, 212, 255, 0.3); margin: 10px 0; max-width: 100%; display: block; }
-    /* Broken image icon එක පෙන්වීම වැළැක්වීමට CSS */
-    img:not([src]) { display: none !important; }
+    /* ලින්ක් වල පෙනුම ලස්සන කිරීමට */
+    a { color: #00d4ff !important; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #00d4ff; }
+    a:hover { color: #00ff88 !important; border-bottom: 1px solid #00ff88; }
     
     .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
     </style>
@@ -70,11 +74,10 @@ st.markdown("""
 
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=80)
-    if st.button("🗑️ Clear Chat History"):
-        st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. මගෙන් ඕනෑම දෙයක් අසන්න."}]
+    if st.button("🗑️ Clear Chat"):
+        st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. අද මම ඔබට උදව් කරන්නේ කොහොමද?"}]
         st.session_state.feedback = {}
         st.rerun()
-    st.info("Created by **Tharusha Rathnayake**")
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -84,7 +87,7 @@ st.markdown("<h1 class='main-title'>සිංහල Chat Bot Pro</h1>", unsafe_a
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්."}]
+    st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්. අද අපි මොනවා ගැනද කතා කරන්නේ?"}]
 if "feedback" not in st.session_state:
     st.session_state.feedback = {}
 
@@ -92,7 +95,7 @@ for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         
-        # YouTube Videos auto-detection
+        # YouTube auto-player
         yt_match = re.search(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11}))', message["content"])
         if yt_match:
             st.video(yt_match.group(1))
@@ -111,7 +114,7 @@ for i, message in enumerate(st.session_state.messages):
                         st.session_state.feedback[i] = True
                         st.rerun()
 
-if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
+if prompt := st.chat_input("Gemini වගේ මගෙන් ඕනෑම දෙයක් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
