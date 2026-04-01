@@ -28,20 +28,18 @@ def get_ai_response(user_input):
     except:
         return "දත්ත ලබා ගැනීමේදී දෝෂයක් සිදු විය. කරුණාකර නැවත උත්සාහ කරන්න."
 
-# --- 2. UI DESIGN (අති නවීන පෙනුම) ---
-st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖", layout="centered")
+# --- 2. UI DESIGN ---
+st.set_page_config(page_title="සිංහල Chat Bot", page_icon="🤖", layout="centered")
 
-# CSS මගින් පෙනුම වෙනස් කිරීම
 st.markdown("""
     <style>
-    /* මුළු පිටුවේම පසුබිම */
     .stApp {
         background-color: #0e1117;
     }
     
-    /* ප්‍රධාන මාතෘකාව (Title) */
+    /* සිංහල Chat Bot මාතෘකාව */
     .main-title {
-        font-size: 55px !important;
+        font-size: 50px !important;
         font-weight: 900;
         text-align: center;
         background: linear-gradient(45deg, #00d4ff, #0055ff, #00ff88);
@@ -49,36 +47,27 @@ st.markdown("""
         -webkit-text-fill-color: transparent;
         margin-top: -50px;
         margin-bottom: 5px;
-        font-family: 'Arial Black', sans-serif;
     }
     
-    /* නිර්මාණය කළ අයගේ නම (Created By) */
     .footer {
         text-align: center;
-        font-size: 16px;
+        font-size: 15px;
         color: #8892b0;
         font-style: italic;
         margin-bottom: 30px;
         letter-spacing: 1px;
     }
 
-    /* Chat Messages ලස්සන කිරීම */
     .stChatMessage {
-        border: 1px solid #1e293b;
-        border-radius: 20px !important;
+        border-radius: 15px !important;
         background-color: #1a202c !important;
-        margin-bottom: 15px;
-    }
-    
-    /* Chat Input Bar එකේ පෙනුම */
-    .stChatInputContainer {
-        padding-bottom: 20px;
+        margin-bottom: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# පෙනුම ප්‍රදර්ශනය කිරීම
-st.markdown("<h1 class='main-title'>Sinhala AI Pro</h1>", unsafe_allow_html=True)
+# නව මාතෘකාව සහ ඔයාගේ නම
+st.markdown("<h1 class='main-title'>සිංහල Chat Bot</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 st.write("---")
 
@@ -86,13 +75,11 @@ st.write("---")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# කලින් කළ මැසේජ් පෙන්වීම
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# User Input ලබා ගැනීම
-if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් ඕනෑම දෙයක් අසන්න..."):
+if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
