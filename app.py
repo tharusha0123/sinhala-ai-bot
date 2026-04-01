@@ -21,7 +21,7 @@ def get_ai_response(messages_history):
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     system_msg = {
         "role": "system", 
-        "content": "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. Respond in natural Sinhala Unicode. Use Markdown tables, bold text, and code blocks where necessary. If user greets, say: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?'"
+        "content": "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. Respond in natural Sinhala Unicode. Use Markdown tables and code blocks where necessary. If user greets, say: 'මම සිංහල Chat Bot, මම කොහොමද ඔබට උදව් කරන්නේ?'"
     }
     data = {
         "model": "llama-3.3-70b-versatile",
@@ -42,17 +42,16 @@ def speak_text(text):
         b64 = base64.b64encode(fp.read()).decode()
         md = f'<audio autoplay="true" src="data:audio/mp3;base64,{b64}">'
         st.markdown(md, unsafe_allow_html=True)
-    except: pass
+    except: st.error("ශබ්දය උත්පාදනය කිරීමට නොහැකි විය.")
 
 st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", layout="wide")
 
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=100)
-    st.title("Settings & Tools")
+    st.title("Settings")
     if st.button("🗑️ Clear Chat History"):
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්."}]
         st.rerun()
-    st.write("---")
     st.info("Created by **Tharusha Rathnayake**.")
 
 st.markdown("""
@@ -73,10 +72,8 @@ st.markdown("""
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
     }
     div[data-testid="stChatMessage"]:hover { 
-        transform: translateY(-8px) scale(1.03); 
+        transform: translateY(-5px); 
         background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(0, 212, 255, 0.5);
-        box-shadow: 0 15px 35px rgba(0, 212, 255, 0.2); 
     }
     code { background-color: #2d3748 !important; color: #fbd38d !important; padding: 2px 5px; border-radius: 5px; }
     </style>
@@ -96,9 +93,12 @@ for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if message["role"] == "assistant" and i > 0:
-            col_a, col_b, col_c = st.columns([0.05, 0.05, 0.9])
-            with col_a: st.button("👍", key=f"up_{i}")
-            with col_b: st.button("👎", key=f"down_{i}")
+            c1, c2, c3, c4 = st.columns([0.06, 0.06, 0.15, 0.73])
+            with c1: st.button("👍", key=f"up_{i}")
+            with c2: st.button("👎", key=f"down_{i}")
+            with c3:
+                if st.button("🔊 Listen", key=f"spk_{i}"):
+                    speak_text(message["content"][:300])
 
 if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
@@ -115,5 +115,5 @@ if prompt := st.chat_input("සිංහලෙන් හෝ English වලින
                 placeholder.markdown(typed_text + "▌")
                 time.sleep(0.005)
             placeholder.markdown(full_response)
-            speak_text(full_response[:200])
             st.session_state.messages.append({"role": "assistant", "content": full_response})
+            st.rerun()
