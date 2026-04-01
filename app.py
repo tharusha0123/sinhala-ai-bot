@@ -1,9 +1,19 @@
 import streamlit as st
 import requests
+from streamlit_lottie import st_lottie
 
 # --- 1. CONFIGURATION ---
-# මෙතනට ඔයාගේ ඇත්තම Groq API Key එක ඇතුළත් කරන්න
 GROQ_API_KEY = "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"
+
+# Lottie Animation එක load කරගැනීමේ function එක
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+# ලස්සන AI Animation එකක් (Lottie Files වලින්)
+lottie_ai = load_lottieurl("https://assets1.lottiefiles.com/packages/lf20_at6miz9j.json")
 
 def get_ai_response(user_input):
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -11,18 +21,10 @@ def get_ai_response(user_input):
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
-    
-    # Singlish, Sinhala සහ English ඕනෑම ආකාරයකින් පැමිණෙන දත්ත හඳුනාගැනීමට දෙන උපදෙස්
     system_instruction = (
-        "You are a professional Sinhala AI assistant. "
-        "Rules:\n"
-        "1. ALWAYS respond in natural, grammatically correct Sinhala Unicode.\n"
-        "2. Even if the user asks in English or Singlish, you must reply in Sinhala.\n"
-        "3. Have a deep understanding of Singlish patterns (e.g., 'mkkd', 'khmda', 'koheda', 'wada').\n"
-        "4. If the input is in English, translate the core concepts into accurate Sinhala.\n"
-        "5. Be helpful and friendly, maintaining a local Sri Lankan vibe."
+        "You are a professional Sinhala AI assistant. Always respond in natural Sinhala Unicode. "
+        "Understand English and Singlish perfectly but answer in Sinhala."
     )
-    
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [
@@ -31,49 +33,69 @@ def get_ai_response(user_input):
         ],
         "temperature": 0.4 
     }
-    
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
         return response.json()['choices'][0]['message']['content']
     except:
-        return "කණගාටුයි, දත්ත ලබා ගැනීමේදී ගැටලුවක් මතු විය. කරුණාකර නැවත උත්සාහ කරන්න."
+        return "කණගාටුයි, දත්ත ලබා ගැනීමේදී ගැටලුවක් මතු විය."
 
-# --- 2. UI DESIGN ---
+# --- 2. UI DESIGN (Animations & Effects) ---
 st.set_page_config(page_title="සිංහල Chat Bot", page_icon="🤖", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; }
+    /* මුළු පිටුවටම Animation එකක් */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stApp { 
+        background-color: #0e1117; 
+        animation: fadeIn 1.5s ease-out;
+    }
     
     .main-title {
-        font-size: 55px !important;
+        font-size: 60px !important;
         font-weight: 900;
         text-align: center;
-        background: linear-gradient(45deg, #00d4ff, #0055ff, #00ff88);
+        background: linear-gradient(90deg, #00d4ff, #00ff88, #0055ff);
+        background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-top: -50px;
-        margin-bottom: 5px;
+        animation: shine 3s linear infinite;
+        margin-top: -30px;
+    }
+
+    @keyframes shine {
+        to { background-position: 200% center; }
     }
     
     .footer {
         text-align: center;
         font-size: 16px;
-        color: #8892b0;
-        font-style: italic;
-        margin-bottom: 30px;
+        color: #00ff88;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(0,255,136,0.5);
     }
 
     .stChatMessage {
-        border: 1px solid #1e293b;
         border-radius: 20px !important;
-        background-color: #1a202c !important;
-        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+    }
+    
+    .stChatMessage:hover {
+        transform: scale(1.02);
     }
     </style>
     """, unsafe_allow_html=True)
 
-# මාතෘකාව සහ Creator නම
+# Animation එක පෙන්වීම
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    if lottie_ai:
+        st_lottie(lottie_ai, height=200, key="ai_anim")
+
 st.markdown("<h1 class='main-title'>සිංහල Chat Bot</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 st.write("---")
@@ -86,7 +108,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ඔයා ඉල්ලපු වෙනස මෙතන තියෙනවා:
 if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
