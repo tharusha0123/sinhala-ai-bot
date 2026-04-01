@@ -1,8 +1,10 @@
 import streamlit as st
 import requests
 
-# --- 1. CONFIGURATION ---
-MISTRAL_API_KEY = "QcwdNlmfqQulxAbH9HAucYtt1AW5VePj"
+# --- 1. CONFIGURATION & API ---
+# API Key එක Streamlit Secrets වලින් ලබා ගැනීම (Security සඳහා)
+# නැත්නම් කෙලින්ම මෙතනට "MISTRAL_API_KEY" එක දාන්නත් පුළුවන්.
+MISTRAL_API_KEY = st.secrets.get("MISTRAL_API_KEY", "QcwdNlmfqQulxAbH9HAucYtt1AW5VePj")
 
 def get_mistral_response(user_input):
     url = "https://api.mistral.ai/v1/chat/completions"
@@ -11,60 +13,51 @@ def get_mistral_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # 🔴 රහස: මෙතනදී අපි AI එකට කියනවා මුලින්ම ප්‍රශ්නය ඉංග්‍රීසියට හරවලා හිතන්න කියලා.
-    # එතකොට 'podima' කියන්නේ 'smallest' කියලා ඒක හරියටම අඳුනගන්නවා.
-    system_instruction = (
-        "You are a highly accurate Sinhala AI. To ensure 100% accuracy, follow these steps:\n"
-        "1. Translate the user's Singlish/Sinhala input into English mentally.\n"
-        "2. Find the correct world fact for that English question.\n"
-        "3. Translate that fact into perfect, natural Sinhala Unicode.\n"
-        "4. Context rules: 'usa'=height, 'diga'=length, 'palala'=width, 'rata'=country, 'podima'=smallest, 'lokuma'=largest.\n"
-        "5. Direct answer only. 1 sentence max."
-    )
-    
     data = {
         "model": "mistral-large-latest",
         "messages": [
-            {"role": "system", "content": system_instruction},
-            {"role": "user", "content": f"Think in English, answer in Sinhala: {user_input}"}
+            {
+                "role": "system", 
+                "content": "You are a precise Sinhala AI. Translate user input to English, find the fact, and answer in natural Sinhala. Max 1 sentence."
+            },
+            {"role": "user", "content": user_input}
         ],
-        "temperature": 0.0 # වැරදීමේ සම්භාවිතාව බිංදුවටම අඩු කිරීමට
+        "temperature": 0.0
     }
     
     try:
         response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status() # Error එකක් ආවොත් කෙලින්ම exception එකට යයි
         return response.json()['choices'][0]['message']['content']
-    except:
-        return "දත්ත ලබා ගැනීමට නොහැකි විය."
+    except Exception:
+        return "කණගාටුයි, දත්ත ලබා ගැනීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න."
 
 # --- 2. UI DESIGN ---
-st.set_page_config(page_title="Sinhala AI Pro", page_icon="🤖")
+st.set_page_config(page_title="Sinhala AI", page_icon="🤖")
 
-st.markdown("""
-    <style>
-    .stApp { background: #0e1117; color: white; }
-    .main-title { font-size: 2.5rem; color: #00d4ff; text-align: center; font-weight: bold; }
-    .stChatMessage { border-radius: 15px !important; }
-    </style>
-    """, unsafe_allow_html=True)
+# සරල Styling
+st.markdown("<h1 style='text-align: center; color: #00d4ff;'>සිංහල AI සහායකයා</h1>", unsafe_allow_html=True)
+st.divider()
 
-st.markdown("<h1 class='main-title'>සිංහල AI සහායකයා</h1>", unsafe_allow_html=True)
-st.write("---")
-
+# Chat History එක තබා ගැනීම
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# කලින් කළ Chat ප්‍රදර්ශනය කිරීම
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# User Input එක ලබා ගැනීම
 if prompt := st.chat_input("සිංහලෙන් හෝ Singlish වලින් අසන්න..."):
-    with st.chat_message("user", avatar="🧑‍💻"):
-        st.markdown(prompt)
+    # User message එක පෙන්වීම
     st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    with st.chat_message("assistant", avatar="🤖"):
-        with st.spinner("තොරතුරු සොයමින්..."):
+    # AI පිළිතුර ලබා ගැනීම
+    with st.chat_message("assistant"):
+        with st.spinner("සිතමින් පවතී..."):
             answer = get_mistral_response(prompt)
             st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
