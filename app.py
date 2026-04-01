@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # --- 1. CONFIGURATION ---
-# මෙතනට ඔයාගේ Groq API Key එක ඇතුළත් කරන්න
+# මෙතනට ඔයාගේ ඇත්තම Groq API Key එක ඇතුළත් කරන්න
 GROQ_API_KEY = "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"
 
 def get_ai_response(user_input):
@@ -12,15 +12,15 @@ def get_ai_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # භාෂා තුනම (Sinhala, Singlish, English) හොඳින් තේරුම් ගැනීමට දෙන උපදෙස්
+    # ඕනෑම භාෂාවකින් ඇහුවත් සිංහලෙන් පමණක් පිළිතුරු දීමට දෙන උපදෙස්
     system_instruction = (
-        "You are a professional and versatile AI assistant. "
-        "The user will communicate in Sinhala Unicode, Singlish, or English. "
-        "Your rules:\n"
-        "1. If the user asks in Sinhala or Singlish, always respond in natural and grammatically correct Sinhala Unicode.\n"
-        "2. If the user asks in English, you should still respond in Sinhala, but keep the explanation clear and accurate.\n"
-        "3. Understand colloquial terms and various Singlish spellings (e.g., 'mkkd', 'mokakda', 'what').\n"
-        "4. Be helpful, friendly, and provide high-quality information."
+        "You are a professional Sinhala AI assistant. "
+        "Your primary rule is: NO MATTER WHAT LANGUAGE THE USER USES (English, Singlish, or Sinhala), "
+        "YOU MUST ALWAYS RESPOND IN NATURAL, ACCURATE SINHALA UNICODE.\n"
+        "1. If the user asks in English, translate the answer to Sinhala.\n"
+        "2. If the user asks in Singlish, understand the intent and reply in Sinhala Unicode.\n"
+        "3. Ensure the Sinhala grammar is perfect (Subject-Verb agreement).\n"
+        "4. Be helpful, friendly, and accurate."
     )
     
     data = {
@@ -29,7 +29,7 @@ def get_ai_response(user_input):
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": user_input}
         ],
-        "temperature": 0.5 
+        "temperature": 0.4 
     }
     
     try:
@@ -86,7 +86,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# ඔයා ඉල්ලපු වෙනස මෙතන තියෙනවා:
+# Chat Input Bar
 if prompt := st.chat_input("සිංහලෙන්, Singlish වලින් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
