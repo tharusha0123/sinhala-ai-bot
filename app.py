@@ -18,24 +18,22 @@ def get_ai_response(messages_history):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     
-    # Gemini වගේ friendly වෙන්න සහ ලින්ක් නිවැරදිව දෙන්න දෙන උපදෙස්
     system_msg = {
         "role": "system", 
         "content": (
             "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-            "Tone: Be highly friendly, conversational, and helpful like Google Gemini. "
-            "Engagement: Always try to end your response with a follow-up question to keep the conversation going. "
-            "Multimedia: Instead of showing broken images, provide clear Markdown links with titles. "
-            "Example: '[මහවැලි ගඟේ පින්තූරය මෙතනින් බලන්න](https://link-to-image.jpg)'. "
-            "Provide YouTube links and helpful website links whenever relevant. "
-            "Language: Use natural, modern Sinhala Unicode."
+            "Tone: Be friendly and highly conversational like Gemini. "
+            "Grammar Rule: Avoid repeating the same words or phrases in a single response. "
+            "Ensure the Sinhala grammar is natural and flows well. Do not sound robotic. "
+            "Multimedia: Provide clear Markdown links for images/info and YouTube links when needed. "
+            "Engagement: Always end with a helpful question to keep the chat going."
         )
     }
     
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.7 # තවත් මිත්‍රශීලී සහ නිර්මාණශීලී වෙන්න 0.7 ට දැම්මා
+        "temperature": 0.7 
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
@@ -46,29 +44,48 @@ st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", 
 
 st.markdown("""
     <style>
-    [data-testid="stAppViewContainer"] { background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; color: white !important; }
+    /* මුළු පිටුවම ලස්සනට පෑදීගෙන එන animation එක */
+    @keyframes superFadeIn {
+        0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    [data-testid="stAppViewContainer"] { 
+        background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; 
+        color: white !important;
+        animation: superFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
     @media (prefers-color-scheme: light) {
         [data-testid="stAppViewContainer"] { background: #ffffff !important; color: #1a202c !important; }
         .stMarkdown, p, h1, h2, h3, span { color: #1a202c !important; }
     }
-    .main-title { font-size: clamp(30px, 5vw, 60px) !important; font-weight: 900; text-align: center; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradientBG 8s ease infinite; }
+
+    .main-title { 
+        font-size: clamp(35px, 6vw, 65px) !important; 
+        font-weight: 900; 
+        text-align: center; 
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
+        background-size: 400% 400%; 
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent; 
+        animation: gradientBG 8s ease infinite; 
+    }
+
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
-    .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; }
+    .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; letter-spacing: 1.5px; }
     
     div[data-testid="stChatMessage"] { 
         border-radius: 25px !important; 
         border: 1px solid rgba(255, 255, 255, 0.15); 
         background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(15px); 
-        transition: all 0.5s ease; 
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: superFadeIn 0.8s ease-out;
     }
-    div[data-testid="stChatMessage"]:hover { transform: translateY(-5px); }
+    div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.02); border-color: #00d4ff; }
     
-    /* ලින්ක් වල පෙනුම ලස්සන කිරීමට */
     a { color: #00d4ff !important; font-weight: bold; text-decoration: none; border-bottom: 1px dashed #00d4ff; }
-    a:hover { color: #00ff88 !important; border-bottom: 1px solid #00ff88; }
-    
-    .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -94,11 +111,8 @@ if "feedback" not in st.session_state:
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        
-        # YouTube auto-player
         yt_match = re.search(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11}))', message["content"])
-        if yt_match:
-            st.video(yt_match.group(1))
+        if yt_match: st.video(yt_match.group(1))
 
         if message["role"] == "assistant" and i > 0:
             if i in st.session_state.feedback:
@@ -114,7 +128,7 @@ for i, message in enumerate(st.session_state.messages):
                         st.session_state.feedback[i] = True
                         st.rerun()
 
-if prompt := st.chat_input("Gemini වගේ මගෙන් ඕනෑම දෙයක් අසන්න..."):
+if prompt := st.chat_input("සිංහලෙන් හෝ English වලින් අසන්න..."):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
