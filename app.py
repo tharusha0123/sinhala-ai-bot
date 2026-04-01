@@ -22,17 +22,18 @@ def get_ai_response(messages_history):
         "role": "system", 
         "content": (
             "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-            "Respond in natural Sinhala Unicode. Use Markdown tables and bold text. "
-            "FOR MULTIMEDIA: Use valid image URLs from Unsplash, Pexels, or Wikimedia. "
-            "If providing YouTube links, use the standard format. "
-            "If a link is not verified, do not provide it. Stay helpful and accurate."
+            "Respond in natural Sinhala Unicode. "
+            "IMAGE RULE: Only use direct image URLs from Wikimedia Commons (https://commons.wikimedia.org) "
+            "or Unsplash (https://source.unsplash.com). Never hallucinate or make up image links. "
+            "If you can't find a real image, do not show an image at all. "
+            "VIDEO RULE: Only provide real YouTube links if relevant."
         )
     }
     
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.5
+        "temperature": 0.4 # තව ටිකක් අඩු කළා බොරු ලින්ක් දෙන එක නතර කරන්න
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
@@ -41,6 +42,7 @@ def get_ai_response(messages_history):
 
 st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", layout="wide")
 
+# CSS - පින්තූර වැඩ නොකළොත් ඒවා සඟවන සහ ලස්සන කරන කොටස
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; color: white !important; }
@@ -61,8 +63,16 @@ st.markdown("""
     }
     div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.01); }
     
-    img { border-radius: 15px; border: 2px solid rgba(0, 212, 255, 0.3); margin: 10px 0; }
-    iframe { border-radius: 15px; border: 2px solid rgba(0, 212, 255, 0.3); }
+    /* පින්තූර වැඩ නොකරනවා නම් ඒවා පෙන්වන එක නතර කරන CSS */
+    img { 
+        max-width: 100%; 
+        border-radius: 15px; 
+        border: 2px solid rgba(0, 212, 255, 0.3); 
+        margin: 10px 0; 
+        display: block;
+    }
+    img:not([src]) { display: none !important; } /* ලින්ක් එකක් නැත්නම් පෙන්වන්න එපා */
+    img[src$=".png"], img[src$=".jpg"] { min-height: 50px; }
     
     .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
     </style>
@@ -74,7 +84,6 @@ with st.sidebar:
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. මගෙන් ඕනෑම දෙයක් අසන්න."}]
         st.session_state.feedback = {}
         st.rerun()
-    st.info("Created by **Tharusha Rathnayake**")
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -92,7 +101,7 @@ for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         
-        
+        # YouTube Videos
         yt_match = re.search(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11}))', message["content"])
         if yt_match:
             st.video(yt_match.group(1))
