@@ -3,7 +3,7 @@ from openai import OpenAI
 
 # --- 1. CONFIGURATION ---
 # ඔයාගේ OpenAI API Key එක මෙතනට ලබා දෙන්න
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
 
 # OpenAI Client එක සකස් කිරීම
 client = OpenAI(api_key=OPENAI_API_KEY)
