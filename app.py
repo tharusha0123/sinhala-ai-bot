@@ -7,8 +7,7 @@ GROQ_API_KEY = "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"
 
 def load_lottieurl(url: str):
     r = requests.get(url)
-    if r.status_code != 200:
-        return None
+    if r.status_code != 200: return None
     return r.json()
 
 lottie_ai = load_lottieurl("https://assets1.lottiefiles.com/packages/lf20_at6miz9j.json")
@@ -20,14 +19,13 @@ def get_ai_response(user_input):
         "Content-Type": "application/json"
     }
     
-    # මෙතන තමයි නම සහ හඳුන්වා දීම වෙනස් කරන්නේ
+    # AI එකට "Hi" කිව්වම දිය යුතු පිළිතුර ඇතුළුව උපදෙස්
     system_instruction = (
-        "Your name is 'සිංහල Chat Bot'. You are a professional Sinhala AI assistant created by Tharusha Rathnayake. "
-        "Instructions:\n"
-        "1. Always introduce yourself as 'සිංහල Chat Bot' if asked for your name.\n"
-        "2. Respond only in natural and accurate Sinhala Unicode.\n"
-        "3. Understand English, Singlish, and Sinhala perfectly but always reply in Sinhala.\n"
-        "4. Be helpful, friendly, and polite."
+        "Your name is 'සිංහල Chat Bot'. You are created by Tharusha Rathnayake. "
+        "Rules:\n"
+        "1. If the user says 'hi' or 'hello', always respond with: 'හායි! මම සිංහල Chat Bot. මම කොහොමද අද ඔබට උදව් කරන්නේ?'\n"
+        "2. For any other question, respond accurately in natural Sinhala Unicode.\n"
+        "3. Always respond in Sinhala, even if the user asks in English or Singlish."
     )
     
     data = {
@@ -49,41 +47,38 @@ st.set_page_config(page_title="සිංහල Chat Bot", page_icon="🤖", layo
 
 st.markdown("""
     <style>
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .stApp { background-color: #0e1117; animation: fadeIn 1.5s ease-out; }
+    .stApp { background-color: #0e1117; }
     .main-title {
-        font-size: 60px !important;
+        font-size: 55px !important;
         font-weight: 900;
         text-align: center;
         background: linear-gradient(90deg, #00d4ff, #00ff88, #0055ff);
-        background-size: 200% auto;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: shine 3s linear infinite;
         margin-top: -30px;
     }
-    @keyframes shine { to { background-position: 200% center; } }
     .footer { text-align: center; font-size: 16px; color: #00ff88; font-weight: bold; }
-    .stChatMessage { border-radius: 20px !important; transition: transform 0.3s ease; }
-    .stChatMessage:hover { transform: scale(1.02); }
+    .stChatMessage { border-radius: 20px !important; }
     </style>
     """, unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    if lottie_ai:
-        st_lottie(lottie_ai, height=200, key="ai_anim")
+    if lottie_ai: st_lottie(lottie_ai, height=180, key="ai_anim")
 
 st.markdown("<h1 class='main-title'>සිංහල Chat Bot</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 st.write("---")
 
-# --- 3. CHAT LOGIC ---
+# --- 3. CHAT LOGIC WITH WELCOME MESSAGE ---
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    # සයිට් එකට ආපු ගමන්ම එන මුල්ම මැසේජ් එක මෙතන තියෙනවා
+    st.session_state.messages = [
+        {
+            "role": "assistant", 
+            "content": "හායි! මම සිංහල Chat Bot. ඔබට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් මගෙන් අසන්න. මම සිංහලෙන් ඔබට ඒ දේවල් පැහැදිලි කර දෙන්නම්."
+        }
+    ]
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
