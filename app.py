@@ -52,15 +52,22 @@ st.markdown("""
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
     .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; }
     
+    /* Hover Animation එක නැවත ඇතුළත් කළා */
     div[data-testid="stChatMessage"] { 
-        border-radius: 20px !important; 
-        border: 1px solid rgba(255,255,255,0.15); 
+        border-radius: 25px !important; 
+        border: 1px solid rgba(255, 255, 255, 0.15); 
         background: rgba(255, 255, 255, 0.05) !important;
         backdrop-filter: blur(15px); 
-        transition: all 0.3s ease; 
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
     }
     
-    /* බොත්තම් කුඩා කිරීමට CSS */
+    div[data-testid="stChatMessage"]:hover { 
+        transform: translateY(-8px) scale(1.02); 
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(0, 212, 255, 0.5);
+        box-shadow: 0 15px 35px rgba(0, 212, 255, 0.2); 
+    }
+
     .stButton button {
         padding: 2px 8px !important;
         font-size: 12px !important;
