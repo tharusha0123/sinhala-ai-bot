@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 from streamlit_lottie import st_lottie
 import time
+import re
 
 GROQ_API_KEY = "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"
 
@@ -17,22 +18,21 @@ def get_ai_response(messages_history):
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     
-    # පින්තූර, වීඩියෝ සහ ලින්ක් ලබා දීමට AI එකට දෙන අලුත් උපදෙස්
     system_msg = {
         "role": "system", 
         "content": (
             "Your name is 'සිංහල Chat Bot', created by Tharusha Rathnayake. "
-            "Respond in natural Sinhala Unicode. "
-            "IMPORTANT: When explaining topics, provide relevant Markdown links, YouTube video links, "
-            "and images using ![Alt text](image_url) format if applicable. "
-            "Make the response interactive and informative."
+            "Respond in natural Sinhala Unicode. Use Markdown tables and bold text. "
+            "FOR MULTIMEDIA: Use valid image URLs from Unsplash, Pexels, or Wikimedia. "
+            "If providing YouTube links, use the standard format. "
+            "If a link is not verified, do not provide it. Stay helpful and accurate."
         )
     }
     
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [system_msg] + messages_history,
-        "temperature": 0.6 # නිර්මාණශීලී පිළිතුරු සඳහා temperature එක පොඩ්ඩක් වැඩි කළා
+        "temperature": 0.5
     }
     try:
         response = requests.post(url, headers=headers, json=data, timeout=25)
@@ -41,7 +41,6 @@ def get_ai_response(messages_history):
 
 st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", layout="wide")
 
-# UI Styling
 st.markdown("""
     <style>
     [data-testid="stAppViewContainer"] { background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; color: white !important; }
@@ -60,20 +59,23 @@ st.markdown("""
         backdrop-filter: blur(15px); 
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
     }
-    div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.02); }
-    img { border-radius: 15px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); }
+    div[data-testid="stChatMessage"]:hover { transform: translateY(-8px) scale(1.01); }
+    
+    img { border-radius: 15px; border: 2px solid rgba(0, 212, 255, 0.3); margin: 10px 0; }
+    iframe { border-radius: 15px; border: 2px solid rgba(0, 212, 255, 0.3); }
+    
+    .stButton button { padding: 2px 8px !important; font-size: 12px !important; border-radius: 10px !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# Sidebar
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=80)
     if st.button("🗑️ Clear Chat History"):
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. මගෙන් ඕනෑම දෙයක් අසන්න."}]
         st.session_state.feedback = {}
         st.rerun()
+    st.info("Created by **Tharusha Rathnayake**")
 
-# Main Header
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if lottie_ai: st_lottie(lottie_ai, height=180, key="ai_anim")
@@ -81,7 +83,6 @@ with col2:
 st.markdown("<h1 class='main-title'>සිංහල Chat Bot Pro</h1>", unsafe_allow_html=True)
 st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 
-# Chat Logic
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. ඔයාට ඕනෑම ප්‍රශ්නයක් සිංහලෙන් හෝ English වලින් අහන්න, මම සිංහලෙන් උත්තර දෙන්නම්."}]
 if "feedback" not in st.session_state:
@@ -90,6 +91,12 @@ if "feedback" not in st.session_state:
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        
+        
+        yt_match = re.search(r'(https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11}))', message["content"])
+        if yt_match:
+            st.video(yt_match.group(1))
+
         if message["role"] == "assistant" and i > 0:
             if i in st.session_state.feedback:
                 st.write("✅")
