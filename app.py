@@ -83,20 +83,32 @@ st.markdown("""
         animation: fadeInSlide 0.6s ease-out;
     }
     
-    .stButton button {
-        padding: 0px !important;
-        font-size: 14px !important;
-        height: 26px !important;
-        width: 32px !important;
-        min-height: 26px !important;
-        border-radius: 6px !important;
-        background-color: transparent !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Main Chat area buttons */
+    .stChatFloatingInputContainer .stButton button {
+        height: auto !important;
+        width: auto !important;
+    }
+
+    /* Sidebar Clear Button Fix */
+    section[data-testid="stSidebar"] .stButton button {
+        width: 100% !important;
+        background-color: #e74c3c !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+        padding: 10px !important;
+        height: 45px !important;
+        border-radius: 10px !important;
+        transition: 0.3s !important;
+    }
+    
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background-color: #c0392b !important;
+        transform: scale(1.02);
     }
     
     strong { color: #00ff88 !important; }
 
-    /* Sidebar Styling */
     [data-testid="stSidebar"] {
         background-color: #11151c !important;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -106,7 +118,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR (Updated Section) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=70)
     st.title("Chat Bot Pro")
@@ -114,7 +126,8 @@ with st.sidebar:
     st.write("---")
     
     st.subheader("⚙️ Settings")
-    if st.button("🗑️ Clear Chat", use_container_width=True):
+    # මෙතන බොත්තම දැන් රතු පාටට ලස්සනට පෙනේවි
+    if st.button("🗑️ Clear Chat History"):
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. අද මම ඔබට උදව් කරන්නේ කොහොමද?"}]
         st.session_state.feedback = {}
         st.rerun()
@@ -122,12 +135,10 @@ with st.sidebar:
     st.write("---")
     st.subheader("🤖 AI Model")
     st.markdown("<p class='sidebar-text'>Model: Llama 3.3 70B</p>", unsafe_allow_html=True)
-    st.markdown("<p class='sidebar-text'>Provider: Groq Cloud</p>", unsafe_allow_html=True)
     
     st.write("---")
     st.subheader("👨‍💻 Developer")
     st.info("**Tharusha Rathnayake**")
-    st.markdown("[🔗 Visit My GitHub](https://github.com/Tharusha-Rathnayake)") # මෙතනට ඔයාගේ ඇත්තම Github link එක දාන්න
     st.write("---")
     st.caption("Version 2.5 | 2026")
 
@@ -151,7 +162,8 @@ for i, message in enumerate(st.session_state.messages):
             if i in st.session_state.feedback:
                 st.write("✅")
             else:
-                btn_col1, btn_col2, _ = st.columns([0.05, 0.05, 0.9])
+                # Main chat area small buttons fix
+                btn_col1, btn_col2, _ = st.columns([0.06, 0.06, 0.88])
                 with btn_col1: 
                     if st.button("👍", key=f"up_{i}"):
                         st.session_state.feedback[i] = True
