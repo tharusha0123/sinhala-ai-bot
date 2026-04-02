@@ -41,20 +41,23 @@ def get_ai_response(messages_history):
         return response.json()['choices'][0]['message']['content']
     except: return "සම්බන්ධතාවයේ දෝෂයක්. කරුණාකර නැවත උත්සාහ කරන්න."
 
-# --- UI DESIGN ---
+# --- UI DESIGN & ANIMATIONS ---
 st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", layout="wide")
 
 st.markdown("""
     <style>
+    /* Fade-in Animation */
     @keyframes fadeInSlide {
         0% { opacity: 0; transform: translateY(15px); }
         100% { opacity: 1; transform: translateY(0); }
     }
+
     [data-testid="stAppViewContainer"] { 
         background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; 
         color: white !important;
         animation: fadeInSlide 1s ease-out;
     }
+
     .main-title { 
         font-size: clamp(28px, 7vw, 55px) !important; 
         font-weight: 900; 
@@ -65,28 +68,47 @@ st.markdown("""
         -webkit-text-fill-color: transparent; 
         animation: gradientBG 8s ease infinite; 
     }
+
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
-    .footer { text-align: center; font-size: 12px; color: #00ff88; font-weight: bold; margin-bottom: 20px; opacity: 0.8; }
+
     div[data-testid="stChatMessage"] { 
         border-radius: 18px !important; 
         border: 1px solid rgba(255, 255, 255, 0.1); 
         background: rgba(255, 255, 255, 0.04) !important;
         backdrop-filter: blur(10px); 
-        padding: 10px !important;
-        margin-bottom: 10px !important;
         transition: 0.3s;
         animation: fadeInSlide 0.6s ease-out;
     }
+    
+    div[data-testid="stChatMessage"]:hover { 
+        transform: translateY(-3px); 
+        border-color: rgba(0, 212, 255, 0.4); 
+    }
+
+    /* Like/Unlike Buttons Styling */
+    .stButton button {
+        padding: 0px !important;
+        font-size: 14px !important;
+        height: 26px !important;
+        width: 32px !important;
+        min-height: 26px !important;
+        border-radius: 6px !important;
+        background-color: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
     section[data-testid="stSidebar"] .stButton button {
         width: 100% !important;
         border-radius: 10px !important;
     }
+
     .new-chat-btn button {
         background-color: #2ecc71 !important;
         color: white !important;
         font-weight: bold !important;
         height: 45px !important;
     }
+
     strong { color: #00ff88 !important; }
     [data-testid="stSidebar"] { background-color: #11151c !important; }
     </style>
@@ -108,9 +130,7 @@ if "current_chat_id" not in st.session_state:
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=70)
     st.title("Chat Bot Pro")
-    
     st.write("---")
-    # New Chat බොත්තම
     st.markdown('<div class="new-chat-btn">', unsafe_allow_html=True)
     if st.button("➕ New Chat"):
         new_id = str(uuid.uuid4())
@@ -123,26 +143,20 @@ with st.sidebar:
         st.session_state.current_chat_id = new_id
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
-    
     st.write("---")
-    st.subheader("📜 Recent Chats")
-    # පරණ චැට් වලට යාමට ලැයිස්තුව
+    st.subheader("📜 History")
     for chat_id, chat_data in st.session_state.all_chats.items():
-        # දැනට ඉන්න චැට් එක හයිලයිට් කිරීමට
-        label = f"💬 {chat_data['name']}"
-        if st.button(label, key=chat_id):
+        if st.button(f"💬 {chat_data['name']}", key=chat_id):
             st.session_state.current_chat_id = chat_id
             st.rerun()
-            
     st.write("---")
-    if st.button("🗑️ Clear All History", type="secondary"):
+    if st.button("🗑️ Clear All History"):
         st.session_state.all_chats = {}
         del st.session_state.current_chat_id
         st.rerun()
 
-# --- CHAT DISPLAY ---
+# --- MAIN DISPLAY ---
 current_chat = st.session_state.all_chats[st.session_state.current_chat_id]
-
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     if lottie_ai: st_lottie(lottie_ai, height=130, key="ai_anim")
@@ -155,12 +169,12 @@ for i, message in enumerate(current_chat["messages"]):
             if i in current_chat["feedback"]:
                 st.write("✅")
             else:
-                c1, c2, _ = st.columns([0.06, 0.06, 0.88])
-                with c1:
+                btn_col1, btn_col2, _ = st.columns([0.05, 0.05, 0.9])
+                with btn_col1:
                     if st.button("👍", key=f"up_{i}_{st.session_state.current_chat_id}"):
                         current_chat["feedback"][i] = True
                         st.rerun()
-                with c2:
+                with btn_col2:
                     if st.button("👎", key=f"down_{i}_{st.session_state.current_chat_id}"):
                         current_chat["feedback"][i] = True
                         st.rerun()
