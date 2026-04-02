@@ -46,7 +46,6 @@ st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", 
 
 st.markdown("""
     <style>
-    /* Fade-in Animation */
     @keyframes fadeInSlide {
         0% { opacity: 0; transform: translateY(15px); }
         100% { opacity: 1; transform: translateY(0); }
@@ -67,9 +66,12 @@ st.markdown("""
         -webkit-background-clip: text; 
         -webkit-text-fill-color: transparent; 
         animation: gradientBG 8s ease infinite; 
+        margin-bottom: 0px !important;
     }
 
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
+
+    .footer { text-align: center; font-size: 14px; color: #00ff88; font-weight: bold; margin-bottom: 20px; opacity: 0.9; }
 
     div[data-testid="stChatMessage"] { 
         border-radius: 18px !important; 
@@ -85,7 +87,6 @@ st.markdown("""
         border-color: rgba(0, 212, 255, 0.4); 
     }
 
-    /* Like/Unlike Buttons Styling */
     .stButton button {
         padding: 0px !important;
         font-size: 14px !important;
@@ -130,6 +131,7 @@ if "current_chat_id" not in st.session_state:
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=70)
     st.title("Chat Bot Pro")
+    st.info("Created by **Tharusha Rathnayake**") # Sidebar එකේ ඔයාගේ නම
     st.write("---")
     st.markdown('<div class="new-chat-btn">', unsafe_allow_html=True)
     if st.button("➕ New Chat"):
@@ -161,6 +163,7 @@ col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     if lottie_ai: st_lottie(lottie_ai, height=130, key="ai_anim")
     st.markdown("<h1 class='main-title'>සිංහල Chat Bot Pro</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True) # Footer එකේ ඔයාගේ නම
 
 for i, message in enumerate(current_chat["messages"]):
     with st.chat_message(message["role"]):
