@@ -47,10 +47,16 @@ st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", 
 
 st.markdown("""
     <style>
-    /* මුළු පිටුවටම අදාළ සරල පෙනුම */
+    /* Animation එක නැවත ඇතුළත් කළා */
+    @keyframes fadeInSlide {
+        0% { opacity: 0; transform: translateY(15px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
     [data-testid="stAppViewContainer"] { 
         background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; 
         color: white !important;
+        animation: fadeInSlide 1s ease-out;
     }
     
     @media (prefers-color-scheme: light) {
@@ -72,7 +78,6 @@ st.markdown("""
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
     .footer { text-align: center; font-size: 12px; color: #00ff88; font-weight: bold; margin-bottom: 20px; opacity: 0.8; }
     
-    /* මැසේජ් පෙට්ටිය */
     div[data-testid="stChatMessage"] { 
         border-radius: 18px !important; 
         border: 1px solid rgba(255, 255, 255, 0.1); 
@@ -80,26 +85,27 @@ st.markdown("""
         backdrop-filter: blur(10px); 
         padding: 10px !important;
         margin-bottom: 10px !important;
+        transition: 0.3s;
+        animation: fadeInSlide 0.6s ease-out;
     }
     
-    /* බොත්තම් ඉතාමත් කුඩා සහ එක ළඟ කිරීමට */
+    div[data-testid="stChatMessage"]:hover { 
+        transform: translateY(-3px); 
+        border-color: rgba(0, 212, 255, 0.4); 
+    }
+    
+    /* බොත්තම් ඉතාමත් කුඩා සහ තවත් ලං කිරීමට */
     .stButton button {
-        padding: 0px 8px !important;
+        padding: 0px !important;
         font-size: 14px !important;
-        height: 28px !important;
-        min-height: 28px !important;
-        width: 35px !important;
-        border-radius: 8px !important;
-        background-color: rgba(255, 255, 255, 0.05) !important;
+        height: 26px !important;
+        width: 32px !important;
+        min-height: 26px !important;
+        border-radius: 6px !important;
+        background-color: transparent !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        margin-right: -10px !important; /* බොත්තම් ලං කිරීමට */
     }
     
-    .stButton button:hover {
-        border-color: #00d4ff !important;
-        background-color: rgba(0, 212, 255, 0.1) !important;
-    }
-
     strong { color: #00ff88 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -132,8 +138,8 @@ for i, message in enumerate(st.session_state.messages):
             if i in st.session_state.feedback:
                 st.write("✅")
             else:
-                # බොත්තම් එක ළඟට ගැනීමට ඉතා කුඩා columns
-                btn_col1, btn_col2, _ = st.columns([0.08, 0.08, 0.84])
+                # බොත්තම් තවත් ලං කිරීමට ඉතා කුඩා columns
+                btn_col1, btn_col2, _ = st.columns([0.05, 0.05, 0.9])
                 with btn_col1: 
                     if st.button("👍", key=f"up_{i}"):
                         st.session_state.feedback[i] = True
