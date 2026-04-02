@@ -42,31 +42,24 @@ def get_ai_response(messages_history):
         return response.json()['choices'][0]['message']['content']
     except: return "සම්බන්ධතාවයේ දෝෂයක්. කරුණාකර නැවත උත්සාහ කරන්න."
 
-# --- UI DESIGN & MOBILE RESPONSIVENESS ---
+# --- UI DESIGN ---
 st.set_page_config(page_title="සිංහල Chat Bot Pro", page_icon="🤖", layout="wide")
 
 st.markdown("""
     <style>
-    /* Mobile optimization */
-    @media (max-width: 640px) {
-        .main-title { font-size: 30px !important; }
-        div[data-testid="stChatMessage"] { padding: 10px !important; border-radius: 15px !important; }
-        .stButton button { width: 40px !important; height: 35px !important; }
-    }
-
-    @keyframes fadeIn {
-        0% { opacity: 0; transform: translateY(15px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-    
+    /* මුළු පිටුවටම අදාළ සරල පෙනුම */
     [data-testid="stAppViewContainer"] { 
         background: radial-gradient(circle at top right, #1a202c, #0e1117) !important; 
         color: white !important;
-        animation: fadeIn 1s ease-out;
+    }
+    
+    @media (prefers-color-scheme: light) {
+        [data-testid="stAppViewContainer"] { background: #ffffff !important; color: #1a202c !important; }
+        .stMarkdown, p, h1, h2, h3, span { color: #1a202c !important; }
     }
 
     .main-title { 
-        font-size: clamp(28px, 8vw, 60px) !important; 
+        font-size: clamp(28px, 7vw, 55px) !important; 
         font-weight: 900; 
         text-align: center; 
         background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); 
@@ -77,36 +70,52 @@ st.markdown("""
     }
 
     @keyframes gradientBG { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
-    .footer { text-align: center; font-size: 12px; color: #00ff88; font-weight: bold; margin-bottom: 20px; }
+    .footer { text-align: center; font-size: 12px; color: #00ff88; font-weight: bold; margin-bottom: 20px; opacity: 0.8; }
     
+    /* මැසේජ් පෙට්ටිය */
     div[data-testid="stChatMessage"] { 
-        border-radius: 20px !important; 
+        border-radius: 18px !important; 
         border: 1px solid rgba(255, 255, 255, 0.1); 
         background: rgba(255, 255, 255, 0.04) !important;
         backdrop-filter: blur(10px); 
-        transition: 0.3s;
+        padding: 10px !important;
+        margin-bottom: 10px !important;
     }
     
-    strong { color: #00ff88 !important; }
+    /* බොත්තම් ඉතාමත් කුඩා සහ එක ළඟ කිරීමට */
+    .stButton button {
+        padding: 0px 8px !important;
+        font-size: 14px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        width: 35px !important;
+        border-radius: 8px !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        margin-right: -10px !important; /* බොත්තම් ලං කිරීමට */
+    }
     
-    /* Input box field styling */
-    .stChatInputContainer { padding-bottom: 20px !important; }
+    .stButton button:hover {
+        border-color: #00d4ff !important;
+        background-color: rgba(0, 212, 255, 0.1) !important;
+    }
+
+    strong { color: #00ff88 !important; }
     </style>
     """, unsafe_allow_html=True)
 
 # --- SIDEBAR ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=60)
-    if st.button("🗑️ Clear Chat"):
+    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712035.png", width=50)
+    if st.button("🗑️ Clear"):
         st.session_state.messages = [{"role": "assistant", "content": "හායි! මම සිංහල Chat Bot. අද මම ඔබට උදව් කරන්නේ කොහොමද?"}]
         st.session_state.feedback = {}
         st.rerun()
-    st.info("Created by Tharusha Rathnayake")
 
 # --- HEADER ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    if lottie_ai: st_lottie(lottie_ai, height=150, key="ai_anim")
+    if lottie_ai: st_lottie(lottie_ai, height=130, key="ai_anim")
     st.markdown("<h1 class='main-title'>සිංහල Chat Bot Pro</h1>", unsafe_allow_html=True)
     st.markdown("<p class='footer'>Created by Tharusha Rathnayake</p>", unsafe_allow_html=True)
 
@@ -123,8 +132,8 @@ for i, message in enumerate(st.session_state.messages):
             if i in st.session_state.feedback:
                 st.write("✅")
             else:
-                # ෆෝන් එකේදී ලස්සනට පේන්න columns පාවිච්චිය
-                btn_col1, btn_col2, _ = st.columns([0.15, 0.15, 0.7])
+                # බොත්තම් එක ළඟට ගැනීමට ඉතා කුඩා columns
+                btn_col1, btn_col2, _ = st.columns([0.08, 0.08, 0.84])
                 with btn_col1: 
                     if st.button("👍", key=f"up_{i}"):
                         st.session_state.feedback[i] = True
